@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig-base.json",
+  "compilerOptions": {
+    "composite": true
+  },
+  "include": ["./**/*", "./whirlpool.idl.json"],
+  "typedocOptions": {
+    "entryPoints": ["index.ts"],
+    "out": "../typedocs"
+  }
+}

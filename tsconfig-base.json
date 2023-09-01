@@ -13,5 +13,9 @@
     "resolveJsonModule": true,
     "moduleResolution": "node"
   },
-  "exclude": ["./dist/**/*"]
+  "exclude": ["./dist/**/*"],
+  "references": [
+    { "path": "./src/tsconfig.json" },
+    { "path": "./tests/tsconfig.json" }
+  ]
 }

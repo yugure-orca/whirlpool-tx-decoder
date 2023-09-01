@@ -57,6 +57,11 @@ export class WhirlpoolTransactionDecoder {
       if (!ix.programId.equals(whirlpoolProgramId)) continue;
 
       const decoded = this.coder.instruction.decode(ix.dataBase58, "base58");
+      if (!decoded) {
+        console.log("failed to decode whirlpool instruction");
+        continue;
+      }
+
       switch (decoded.name) {
         case "closeBundledPosition":
           decodedInstructions.push(this.decodeCloseBundledPositionInstruction(decoded, ix.accounts));
