@@ -58,8 +58,7 @@ export class WhirlpoolTransactionDecoder {
 
       const decoded = this.coder.instruction.decode(ix.dataBase58, "base58");
       if (!decoded) {
-        console.log("failed to decode whirlpool instruction");
-        continue;
+        throw new Error("failed to decode whirlpool instruction");
       }
 
       switch (decoded.name) {
@@ -161,8 +160,8 @@ export class WhirlpoolTransactionDecoder {
           decodedInstructions.push(this.decodeAdminIncreaseLiquidityInstruction(decoded, ix.accounts));
           break;
         default:
-          // ignore other whirlpool instructions
-          console.log("ignored unknown whirlpool instruction:", decoded.name);
+          // unknown instruction
+          throw new Error("unknown whirlpool instruction");
       }
     }
 
