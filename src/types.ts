@@ -171,6 +171,8 @@ export type DecodedOpenPositionWithMetadataInstruction = {
     systemProgram: PublicKey;
     rent: PublicKey;
     associatedTokenProgram: PublicKey;
+    metadataProgram: PublicKey;
+    metadataUpdateAuth: PublicKey;
   };
 };
 

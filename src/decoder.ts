@@ -318,7 +318,7 @@ export class WhirlpoolTransactionDecoder {
 
   private static decodeOpenPositionWithMetadataInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedOpenPositionWithMetadataInstruction {
     invariant(ix.name === "openPositionWithMetadata", "Invalid instruction name");
-    invariant(accounts.length >= 11, "Invalid accounts");
+    invariant(accounts.length >= 13, "Invalid accounts");
     return {
       name: "openPositionWithMetadata",
       data: {
@@ -337,6 +337,8 @@ export class WhirlpoolTransactionDecoder {
         systemProgram: accounts[8],
         rent: accounts[9],
         associatedTokenProgram: accounts[10],
+        metadataProgram: accounts[11],
+        metadataUpdateAuth: accounts[12],
       },
     };
   }

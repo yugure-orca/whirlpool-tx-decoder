@@ -1,6 +1,6 @@
 {
-  "name": "whirlpool-tx-decoder",
-  "version": "0.0.1",
+  "name": "@yugure-orca/whirlpool-tx-decoder",
+  "version": "0.0.2",
   "description": "",
   "repository": {
     "type": "git",
@@ -29,6 +29,7 @@
   "scripts": {
     "build": "rimraf dist && tsc -p src",
     "clean": "rimraf dist",
+    "prepublishOnly": "yarn build",
     "test": "jest --detectOpenHandles",
     "docs": "npx typedoc --excludePrivate --categorizeByGroup false --tsconfig tsconfig.json"
   },
