@@ -1,9 +1,10 @@
-import { PublicKey } from "@solana/web3.js";
 import { BorshCoder, Idl, Instruction as AnchorInstruction } from "@coral-xyz/anchor";
-import { decodeTransferInstruction, DecodedTransferInstruction, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { TOKEN_PROGRAM_ID, transferInstructionData } from "@solana/spl-token";
 import invariant from "tiny-invariant"
 import bs58 from "bs58";
 import {
+  PubkeyString,
+  TransferAmount,
   TransactionJSON,
   InstructionJSON,
   Instruction,
@@ -45,16 +46,18 @@ import {
 // IDL
 import whirlpoolIDL from "./whirlpool.idl.json";
 
+const TOKEN_PROGRAM_ID_STRING = TOKEN_PROGRAM_ID.toBase58();
+
 export class WhirlpoolTransactionDecoder {
   private static coder = new BorshCoder<string, string>(whirlpoolIDL as Idl);
 
-  public static decode(transaction: TransactionJSON, whirlpoolProgramId: PublicKey): DecodedWhirlpoolInstruction[] {
+  public static decode(transaction: TransactionJSON, whirlpoolProgramId: PubkeyString): DecodedWhirlpoolInstruction[] {
     const instructions = this.pickInstructions(transaction);
 
     const decodedInstructions: DecodedWhirlpoolInstruction[] = [];
     for (let i=0; i< instructions.length; i++) {
       const ix = instructions[i];
-      if (!ix.programId.equals(whirlpoolProgramId)) continue;
+      if (ix.programId !== whirlpoolProgramId) continue;
 
       const decoded = this.coder.instruction.decode(ix.dataBase58, "base58");
       if (!decoded) {
@@ -191,8 +194,8 @@ export class WhirlpoolTransactionDecoder {
     for (let cursor = 0; cursor < allInstructions.length; cursor++) {
       const ix = allInstructions[cursor];
       decodedInstructions.push({
-        programId: new PublicKey(accounts[ix.programIdIndex]),
-        accounts: ix.accounts.map((i) => new PublicKey(accounts[i])),
+        programId: accounts[ix.programIdIndex],
+        accounts: ix.accounts.map((i) => accounts[i]),
         dataBase58: ix.data,
       });
     }
@@ -200,29 +203,23 @@ export class WhirlpoolTransactionDecoder {
     return decodedInstructions;
   }
 
-  private static decodeTransferInstructions(ixs: Instruction[]): DecodedTransferInstruction[] {
+  private static decodeTransferInstructions(ixs: Instruction[]): TransferAmount[] {
     return ixs.map((ix) => this.decodeTransferInstruction(ix));
   }
 
-  private static decodeTransferInstruction(ix: Instruction): DecodedTransferInstruction {
-    invariant(ix.programId.equals(TOKEN_PROGRAM_ID), "Invalid program id");
+  private static decodeTransferInstruction(ix: Instruction): TransferAmount {
+    invariant(ix.programId === TOKEN_PROGRAM_ID_STRING, "Invalid program id");
     invariant(ix.accounts.length >= 3, "Invalid number of accounts");
 
     const dataU8array = bs58.decode(ix.dataBase58);
     const dataBuffer = Buffer.from(dataU8array);
 
-    return decodeTransferInstruction({
-      programId: ix.programId,
-      keys: [
-        {pubkey: ix.accounts[0], isSigner: false, isWritable: true}, // source
-        {pubkey: ix.accounts[1], isSigner: false, isWritable: true}, // destination
-        {pubkey: ix.accounts[2], isSigner: true, isWritable: true}, // authority
-      ],
-      data: dataBuffer,
-    });
+    const decoded = transferInstructionData.decode(dataBuffer);
+
+    return decoded.amount;
   }
 
-  private static decodeSwapInstruction(ix: AnchorInstruction, accounts: PublicKey[], transfers: DecodedTransferInstruction[]): DecodedSwapInstruction {
+  private static decodeSwapInstruction(ix: AnchorInstruction, accounts: PubkeyString[], transfers: TransferAmount[]): DecodedSwapInstruction {
     invariant(ix.name === "swap", "Invalid instruction name");
     invariant(accounts.length >= 11, "Invalid accounts");
     return {
@@ -251,7 +248,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeTwoHopSwapInstruction(ix: AnchorInstruction, accounts: PublicKey[], transfers: DecodedTransferInstruction[]): DecodedTwoHopSwapInstruction {
+  private static decodeTwoHopSwapInstruction(ix: AnchorInstruction, accounts: PubkeyString[], transfers: TransferAmount[]): DecodedTwoHopSwapInstruction {
     invariant(ix.name === "twoHopSwap", "Invalid instruction name");
     invariant(accounts.length >= 20, "Invalid accounts");
     return {
@@ -291,7 +288,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeOpenPositionInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedOpenPositionInstruction {
+  private static decodeOpenPositionInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedOpenPositionInstruction {
     invariant(ix.name === "openPosition", "Invalid instruction name");
     invariant(accounts.length >= 10, "Invalid accounts");
     return {
@@ -315,7 +312,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeOpenPositionWithMetadataInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedOpenPositionWithMetadataInstruction {
+  private static decodeOpenPositionWithMetadataInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedOpenPositionWithMetadataInstruction {
     invariant(ix.name === "openPositionWithMetadata", "Invalid instruction name");
     invariant(accounts.length >= 13, "Invalid accounts");
     return {
@@ -342,7 +339,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeIncreaseLiquidityInstruction(ix: AnchorInstruction, accounts: PublicKey[], transfers: DecodedTransferInstruction[]): DecodedIncreaseLiquidityInstruction {
+  private static decodeIncreaseLiquidityInstruction(ix: AnchorInstruction, accounts: PubkeyString[], transfers: TransferAmount[]): DecodedIncreaseLiquidityInstruction {
     invariant(ix.name === "increaseLiquidity", "Invalid instruction name");
     invariant(accounts.length >= 11, "Invalid accounts");
     return {
@@ -369,7 +366,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeDecreaseLiquidityInstruction(ix: AnchorInstruction, accounts: PublicKey[], transfers: DecodedTransferInstruction[]): DecodedDecreaseLiquidityInstruction {
+  private static decodeDecreaseLiquidityInstruction(ix: AnchorInstruction, accounts: PubkeyString[], transfers: TransferAmount[]): DecodedDecreaseLiquidityInstruction {
     invariant(ix.name === "decreaseLiquidity", "Invalid instruction name");
     invariant(accounts.length >= 11, "Invalid accounts");
     return {
@@ -396,7 +393,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeUpdateFeesAndRewardsInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedUpdateFeesAndRewardsInstruction {
+  private static decodeUpdateFeesAndRewardsInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedUpdateFeesAndRewardsInstruction {
     invariant(ix.name === "updateFeesAndRewards", "Invalid instruction name");
     invariant(accounts.length >= 4, "Invalid accounts");
     return {
@@ -411,7 +408,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeCollectFeesInstruction(ix: AnchorInstruction, accounts: PublicKey[], transfers: DecodedTransferInstruction[]): DecodedCollectFeesInstruction {
+  private static decodeCollectFeesInstruction(ix: AnchorInstruction, accounts: PubkeyString[], transfers: TransferAmount[]): DecodedCollectFeesInstruction {
     invariant(ix.name === "collectFees", "Invalid instruction name");
     invariant(accounts.length >= 9, "Invalid accounts");
     return {
@@ -432,7 +429,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeCollectRewardInstruction(ix: AnchorInstruction, accounts: PublicKey[], transfers: DecodedTransferInstruction[]): DecodedCollectRewardInstruction {
+  private static decodeCollectRewardInstruction(ix: AnchorInstruction, accounts: PubkeyString[], transfers: TransferAmount[]): DecodedCollectRewardInstruction {
     invariant(ix.name === "collectReward", "Invalid instruction name");
     invariant(accounts.length >= 7, "Invalid accounts");
     return {
@@ -453,7 +450,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeClosePositionInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedClosePositionInstruction {
+  private static decodeClosePositionInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedClosePositionInstruction {
     invariant(ix.name === "closePosition", "Invalid instruction name");
     invariant(accounts.length >= 6, "Invalid accounts");
     return {
@@ -470,7 +467,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeCollectProtocolFeesInstruction(ix: AnchorInstruction, accounts: PublicKey[], transfers: DecodedTransferInstruction[]): DecodedCollectProtocolFeesInstruction {
+  private static decodeCollectProtocolFeesInstruction(ix: AnchorInstruction, accounts: PubkeyString[], transfers: TransferAmount[]): DecodedCollectProtocolFeesInstruction {
     invariant(ix.name === "collectProtocolFees", "Invalid instruction name");
     invariant(accounts.length >= 8, "Invalid accounts");
     return {
@@ -490,7 +487,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeAdminIncreaseLiquidityInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedAdminIncreaseLiquidityInstruction {
+  private static decodeAdminIncreaseLiquidityInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedAdminIncreaseLiquidityInstruction {
     invariant(ix.name === "adminIncreaseLiquidity", "Invalid instruction name");
     invariant(accounts.length >= 3, "Invalid accounts");
     return {
@@ -506,15 +503,15 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeInitializeConfigInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedInitializeConfigInstruction {
+  private static decodeInitializeConfigInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedInitializeConfigInstruction {
     invariant(ix.name === "initializeConfig", "Invalid instruction name");
     invariant(accounts.length >= 3, "Invalid accounts");
     return {
       name: "initializeConfig",
       data: {
-        feeAuthority: ix.data["feeAuthority"],
-        collectProtocolFeesAuthority: ix.data["collectProtocolFeesAuthority"],
-        rewardEmissionsSuperAuthority: ix.data["rewardEmissionsSuperAuthority"],
+        feeAuthority: ix.data["feeAuthority"].toString(),
+        collectProtocolFeesAuthority: ix.data["collectProtocolFeesAuthority"].toString(),
+        rewardEmissionsSuperAuthority: ix.data["rewardEmissionsSuperAuthority"].toString(),
         defaultProtocolFeeRate: ix.data["defaultProtocolFeeRate"],
       },
       accounts: {
@@ -525,7 +522,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeInitializeFeeTierInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedInitializeFeeTierInstruction {
+  private static decodeInitializeFeeTierInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedInitializeFeeTierInstruction {
     invariant(ix.name === "initializeFeeTier", "Invalid instruction name");
     invariant(accounts.length >= 5, "Invalid accounts");
     return {
@@ -544,7 +541,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeInitializePoolInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedInitializePoolInstruction {
+  private static decodeInitializePoolInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedInitializePoolInstruction {
     invariant(ix.name === "initializePool", "Invalid instruction name");
     invariant(accounts.length >= 11, "Invalid accounts");
     return {
@@ -569,7 +566,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeInitializePositionBundleInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedInitializePositionBundleInstruction {
+  private static decodeInitializePositionBundleInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedInitializePositionBundleInstruction {
     invariant(ix.name === "initializePositionBundle", "Invalid instruction name");
     invariant(accounts.length >= 9, "Invalid accounts");
     return {
@@ -589,7 +586,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeInitializePositionBundleWithMetadataInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedInitializePositionBundleWithMetadataInstruction {
+  private static decodeInitializePositionBundleWithMetadataInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedInitializePositionBundleWithMetadataInstruction {
     invariant(ix.name === "initializePositionBundleWithMetadata", "Invalid instruction name");
     invariant(accounts.length >= 12, "Invalid accounts");
     return {
@@ -612,7 +609,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeInitializeRewardInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedInitializeRewardInstruction {
+  private static decodeInitializeRewardInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedInitializeRewardInstruction {
     invariant(ix.name === "initializeReward", "Invalid instruction name");
     invariant(accounts.length >= 8, "Invalid accounts");
     return {
@@ -633,7 +630,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeInitializeTickArrayInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedInitializeTickArrayInstruction {
+  private static decodeInitializeTickArrayInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedInitializeTickArrayInstruction {
     invariant(ix.name === "initializeTickArray", "Invalid instruction name");
     invariant(accounts.length >= 4, "Invalid accounts");
     return {
@@ -650,7 +647,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeDeletePositionBundleInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedDeletePositionBundleInstruction {
+  private static decodeDeletePositionBundleInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedDeletePositionBundleInstruction {
     invariant(ix.name === "deletePositionBundle", "Invalid instruction name");
     invariant(accounts.length >= 6, "Invalid accounts");
     return {
@@ -667,7 +664,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeOpenBundledPositionInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedOpenBundledPositionInstruction {
+  private static decodeOpenBundledPositionInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedOpenBundledPositionInstruction {
     invariant(ix.name === "openBundledPosition", "Invalid instruction name");
     invariant(accounts.length >= 8, "Invalid accounts");
     return {
@@ -690,7 +687,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeCloseBundledPositionInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedCloseBundledPositionInstruction {
+  private static decodeCloseBundledPositionInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedCloseBundledPositionInstruction {
     invariant(ix.name === "closeBundledPosition", "Invalid instruction name");
     invariant(accounts.length >= 5, "Invalid accounts");
     return {
@@ -708,7 +705,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeSetCollectProtocolFeesAuthorityInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedSetCollectProtocolFeesAuthorityInstruction {
+  private static decodeSetCollectProtocolFeesAuthorityInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedSetCollectProtocolFeesAuthorityInstruction {
     invariant(ix.name === "setCollectProtocolFeesAuthority", "Invalid instruction name");
     invariant(accounts.length >= 3, "Invalid accounts");
     return {
@@ -722,7 +719,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeSetDefaultFeeRateInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedSetDefaultFeeRateInstruction {
+  private static decodeSetDefaultFeeRateInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedSetDefaultFeeRateInstruction {
     invariant(ix.name === "setDefaultFeeRate", "Invalid instruction name");
     invariant(accounts.length >= 3, "Invalid accounts");
     return {
@@ -738,7 +735,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeSetDefaultProtocolFeeRateInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedSetDefaultProtocolFeeRateInstruction {
+  private static decodeSetDefaultProtocolFeeRateInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedSetDefaultProtocolFeeRateInstruction {
     invariant(ix.name === "setDefaultProtocolFeeRate", "Invalid instruction name");
     invariant(accounts.length >= 2, "Invalid accounts");
     return {
@@ -753,7 +750,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeSetFeeAuthorityInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedSetFeeAuthorityInstruction {
+  private static decodeSetFeeAuthorityInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedSetFeeAuthorityInstruction {
     invariant(ix.name === "setFeeAuthority", "Invalid instruction name");
     invariant(accounts.length >= 3, "Invalid accounts");
     return {
@@ -767,7 +764,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeSetFeeRateInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedSetFeeRateInstruction {
+  private static decodeSetFeeRateInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedSetFeeRateInstruction {
     invariant(ix.name === "setFeeRate", "Invalid instruction name");
     invariant(accounts.length >= 3, "Invalid accounts");
     return {
@@ -783,7 +780,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeSetProtocolFeeRateInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedSetProtocolFeeRateInstruction {
+  private static decodeSetProtocolFeeRateInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedSetProtocolFeeRateInstruction {
     invariant(ix.name === "setProtocolFeeRate", "Invalid instruction name");
     invariant(accounts.length >= 3, "Invalid accounts");
     return {
@@ -799,7 +796,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeSetRewardAuthorityInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedSetRewardAuthorityInstruction {
+  private static decodeSetRewardAuthorityInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedSetRewardAuthorityInstruction {
     invariant(ix.name === "setRewardAuthority", "Invalid instruction name");
     invariant(accounts.length >= 3, "Invalid accounts");
     return {
@@ -815,7 +812,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeSetRewardAuthorityBySuperAuthorityInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedSetRewardAuthorityBySuperAuthorityInstruction {
+  private static decodeSetRewardAuthorityBySuperAuthorityInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedSetRewardAuthorityBySuperAuthorityInstruction {
     invariant(ix.name === "setRewardAuthorityBySuperAuthority", "Invalid instruction name");
     invariant(accounts.length >= 4, "Invalid accounts");
     return {
@@ -832,7 +829,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeSetRewardEmissionsInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedSetRewardEmissionsInstruction {
+  private static decodeSetRewardEmissionsInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedSetRewardEmissionsInstruction {
     invariant(ix.name === "setRewardEmissions", "Invalid instruction name");
     invariant(accounts.length >= 3, "Invalid accounts");
     return {
@@ -849,7 +846,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeSetRewardEmissionsSuperAuthorityInstruction(ix: AnchorInstruction, accounts: PublicKey[]): DecodedSetRewardEmissionsSuperAuthorityInstruction {
+  private static decodeSetRewardEmissionsSuperAuthorityInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedSetRewardEmissionsSuperAuthorityInstruction {
     invariant(ix.name === "setRewardEmissionsSuperAuthority", "Invalid instruction name");
     invariant(accounts.length >= 3, "Invalid accounts");
     return {

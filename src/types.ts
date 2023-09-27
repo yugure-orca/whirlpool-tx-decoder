@@ -1,6 +1,7 @@
-import { PublicKey } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
-import { DecodedTransferInstruction } from "@solana/spl-token";
+
+export type PubkeyString = string;
+export type TransferAmount = bigint;
 
 export type InstructionJSON = {
   programIdIndex: number;
@@ -33,8 +34,8 @@ export type TransactionJSON = {
 };
 
 export type Instruction = {
-  programId: PublicKey;
-  accounts: PublicKey[];
+  programId: PubkeyString;
+  accounts: PubkeyString[];
   dataBase58: string;
 };
 
@@ -82,19 +83,19 @@ export type DecodedSwapInstruction = {
     aToB: boolean;
   };
   accounts: {
-    tokenProgram: PublicKey;
-    tokenAuthority: PublicKey;
-    whirlpool: PublicKey;
-    tokenOwnerAccountA: PublicKey;
-    tokenVaultA: PublicKey;
-    tokenOwnerAccountB: PublicKey;
-    tokenVaultB: PublicKey;
-    tickArray0: PublicKey;
-    tickArray1: PublicKey;
-    tickArray2: PublicKey;
-    oracle: PublicKey;
+    tokenProgram: PubkeyString;
+    tokenAuthority: PubkeyString;
+    whirlpool: PubkeyString;
+    tokenOwnerAccountA: PubkeyString;
+    tokenVaultA: PubkeyString;
+    tokenOwnerAccountB: PubkeyString;
+    tokenVaultB: PubkeyString;
+    tickArray0: PubkeyString;
+    tickArray1: PubkeyString;
+    tickArray2: PubkeyString;
+    oracle: PubkeyString;
   };
-  transfers: DecodedTransferInstruction[];
+  transfers: TransferAmount[];
 };
 
 export type DecodedTwoHopSwapInstruction = {
@@ -109,28 +110,28 @@ export type DecodedTwoHopSwapInstruction = {
     sqrtPriceLimitTwo: BN;
   };
   accounts: {
-    tokenProgram: PublicKey;
-    tokenAuthority: PublicKey;
-    whirlpoolOne: PublicKey;
-    whirlpoolTwo: PublicKey;
-    tokenOwnerAccountOneA: PublicKey;
-    tokenVaultOneA: PublicKey;
-    tokenOwnerAccountOneB: PublicKey;
-    tokenVaultOneB: PublicKey;
-    tokenOwnerAccountTwoA: PublicKey;
-    tokenVaultTwoA: PublicKey;
-    tokenOwnerAccountTwoB: PublicKey;
-    tokenVaultTwoB: PublicKey;
-    tickArrayOne0: PublicKey;
-    tickArrayOne1: PublicKey;
-    tickArrayOne2: PublicKey;
-    tickArrayTwo0: PublicKey;
-    tickArrayTwo1: PublicKey;
-    tickArrayTwo2: PublicKey;
-    oracleOne: PublicKey;
-    oracleTwo: PublicKey;
+    tokenProgram: PubkeyString;
+    tokenAuthority: PubkeyString;
+    whirlpoolOne: PubkeyString;
+    whirlpoolTwo: PubkeyString;
+    tokenOwnerAccountOneA: PubkeyString;
+    tokenVaultOneA: PubkeyString;
+    tokenOwnerAccountOneB: PubkeyString;
+    tokenVaultOneB: PubkeyString;
+    tokenOwnerAccountTwoA: PubkeyString;
+    tokenVaultTwoA: PubkeyString;
+    tokenOwnerAccountTwoB: PubkeyString;
+    tokenVaultTwoB: PubkeyString;
+    tickArrayOne0: PubkeyString;
+    tickArrayOne1: PubkeyString;
+    tickArrayOne2: PubkeyString;
+    tickArrayTwo0: PubkeyString;
+    tickArrayTwo1: PubkeyString;
+    tickArrayTwo2: PubkeyString;
+    oracleOne: PubkeyString;
+    oracleTwo: PubkeyString;
   };
-  transfers: DecodedTransferInstruction[];
+  transfers: TransferAmount[];
 };
 
 export type DecodedOpenPositionInstruction = {
@@ -140,16 +141,16 @@ export type DecodedOpenPositionInstruction = {
     tickUpperIndex: number;
   };
   accounts: {
-    funder: PublicKey;
-    owner: PublicKey;
-    position: PublicKey;
-    positionMint: PublicKey;
-    positionTokenAccount: PublicKey;
-    whirlpool: PublicKey;
-    tokenProgram: PublicKey;
-    systemProgram: PublicKey;
-    rent: PublicKey;
-    associatedTokenProgram: PublicKey;
+    funder: PubkeyString;
+    owner: PubkeyString;
+    position: PubkeyString;
+    positionMint: PubkeyString;
+    positionTokenAccount: PubkeyString;
+    whirlpool: PubkeyString;
+    tokenProgram: PubkeyString;
+    systemProgram: PubkeyString;
+    rent: PubkeyString;
+    associatedTokenProgram: PubkeyString;
   };
 };
 
@@ -160,19 +161,19 @@ export type DecodedOpenPositionWithMetadataInstruction = {
     tickUpperIndex: number;
   };
   accounts: {
-    funder: PublicKey;
-    owner: PublicKey;
-    position: PublicKey;
-    positionMint: PublicKey;
-    positionMetadataAccount: PublicKey;
-    positionTokenAccount: PublicKey;
-    whirlpool: PublicKey;
-    tokenProgram: PublicKey;
-    systemProgram: PublicKey;
-    rent: PublicKey;
-    associatedTokenProgram: PublicKey;
-    metadataProgram: PublicKey;
-    metadataUpdateAuth: PublicKey;
+    funder: PubkeyString;
+    owner: PubkeyString;
+    position: PubkeyString;
+    positionMint: PubkeyString;
+    positionMetadataAccount: PubkeyString;
+    positionTokenAccount: PubkeyString;
+    whirlpool: PubkeyString;
+    tokenProgram: PubkeyString;
+    systemProgram: PubkeyString;
+    rent: PubkeyString;
+    associatedTokenProgram: PubkeyString;
+    metadataProgram: PubkeyString;
+    metadataUpdateAuth: PubkeyString;
   };
 };
 
@@ -184,19 +185,19 @@ export type DecodedIncreaseLiquidityInstruction = {
     tokenMaxB: BN;
   };
   accounts: {
-    whirlpool: PublicKey;
-    tokenProgram: PublicKey;
-    positionAuthority: PublicKey;
-    position: PublicKey;
-    positionTokenAccount: PublicKey;
-    tokenOwnerAccountA: PublicKey;
-    tokenOwnerAccountB: PublicKey;
-    tokenVaultA: PublicKey;
-    tokenVaultB: PublicKey;
-    tickArrayLower: PublicKey;
-    tickArrayUpper: PublicKey;
+    whirlpool: PubkeyString;
+    tokenProgram: PubkeyString;
+    positionAuthority: PubkeyString;
+    position: PubkeyString;
+    positionTokenAccount: PubkeyString;
+    tokenOwnerAccountA: PubkeyString;
+    tokenOwnerAccountB: PubkeyString;
+    tokenVaultA: PubkeyString;
+    tokenVaultB: PubkeyString;
+    tickArrayLower: PubkeyString;
+    tickArrayUpper: PubkeyString;
   };
-  transfers: DecodedTransferInstruction[];
+  transfers: TransferAmount[];
 };
 
 export type DecodedDecreaseLiquidityInstruction = {
@@ -207,29 +208,29 @@ export type DecodedDecreaseLiquidityInstruction = {
     tokenMinB: BN;
   };
   accounts: {
-    whirlpool: PublicKey;
-    tokenProgram: PublicKey;
-    positionAuthority: PublicKey;
-    position: PublicKey;
-    positionTokenAccount: PublicKey;
-    tokenOwnerAccountA: PublicKey;
-    tokenOwnerAccountB: PublicKey;
-    tokenVaultA: PublicKey;
-    tokenVaultB: PublicKey;
-    tickArrayLower: PublicKey;
-    tickArrayUpper: PublicKey;
+    whirlpool: PubkeyString;
+    tokenProgram: PubkeyString;
+    positionAuthority: PubkeyString;
+    position: PubkeyString;
+    positionTokenAccount: PubkeyString;
+    tokenOwnerAccountA: PubkeyString;
+    tokenOwnerAccountB: PubkeyString;
+    tokenVaultA: PubkeyString;
+    tokenVaultB: PubkeyString;
+    tickArrayLower: PubkeyString;
+    tickArrayUpper: PubkeyString;
   };
-  transfers: DecodedTransferInstruction[];
+  transfers: TransferAmount[];
 };
 
 export type DecodedUpdateFeesAndRewardsInstruction = {
   name: "updateFeesAndRewards";
   data: {};
   accounts: {
-    whirlpool: PublicKey;
-    position: PublicKey;
-    tickArrayLower: PublicKey;
-    tickArrayUpper: PublicKey;
+    whirlpool: PubkeyString;
+    position: PubkeyString;
+    tickArrayLower: PubkeyString;
+    tickArrayUpper: PubkeyString;
   };
 };
 
@@ -237,17 +238,17 @@ export type DecodedCollectFeesInstruction = {
   name: "collectFees";
   data: {};
   accounts: {
-    whirlpool: PublicKey;
-    positionAuthority: PublicKey;
-    position: PublicKey;
-    positionTokenAccount: PublicKey;
-    tokenOwnerAccountA: PublicKey;
-    tokenVaultA: PublicKey;
-    tokenOwnerAccountB: PublicKey;
-    tokenVaultB: PublicKey;
-    tokenProgram: PublicKey;
+    whirlpool: PubkeyString;
+    positionAuthority: PubkeyString;
+    position: PubkeyString;
+    positionTokenAccount: PubkeyString;
+    tokenOwnerAccountA: PubkeyString;
+    tokenVaultA: PubkeyString;
+    tokenOwnerAccountB: PubkeyString;
+    tokenVaultB: PubkeyString;
+    tokenProgram: PubkeyString;
   };
-  transfers: DecodedTransferInstruction[];
+  transfers: TransferAmount[];
 };
 
 export type DecodedCollectRewardInstruction = {
@@ -256,27 +257,27 @@ export type DecodedCollectRewardInstruction = {
     rewardIndex: number;
   };
   accounts: {
-    whirlpool: PublicKey;
-    positionAuthority: PublicKey;
-    position: PublicKey;
-    positionTokenAccount: PublicKey;
-    rewardOwnerAccount: PublicKey;
-    rewardVault: PublicKey;
-    tokenProgram: PublicKey;
+    whirlpool: PubkeyString;
+    positionAuthority: PubkeyString;
+    position: PubkeyString;
+    positionTokenAccount: PubkeyString;
+    rewardOwnerAccount: PubkeyString;
+    rewardVault: PubkeyString;
+    tokenProgram: PubkeyString;
   };
-  transfers: DecodedTransferInstruction[];
+  transfers: TransferAmount[];
 };
 
 export type DecodedClosePositionInstruction = {
   name: "closePosition";
   data: {};
   accounts: {
-    positionAuthority: PublicKey;
-    receiver: PublicKey;
-    position: PublicKey;
-    positionMint: PublicKey;
-    positionTokenAccount: PublicKey;
-    tokenProgram: PublicKey;
+    positionAuthority: PubkeyString;
+    receiver: PubkeyString;
+    position: PubkeyString;
+    positionMint: PubkeyString;
+    positionTokenAccount: PubkeyString;
+    tokenProgram: PubkeyString;
   };
 };
 
@@ -284,16 +285,16 @@ export type DecodedCollectProtocolFeesInstruction = {
   name: "collectProtocolFees";
   data: {};
   accounts: {
-    whirlpoolsConfig: PublicKey;
-    whirlpool: PublicKey;
-    collectProtocolFeesAuthority: PublicKey;
-    tokenVaultA: PublicKey;
-    tokenVaultB: PublicKey;
-    tokenDestinationA: PublicKey;
-    tokenDestinationB: PublicKey;
-    tokenProgram: PublicKey;
+    whirlpoolsConfig: PubkeyString;
+    whirlpool: PubkeyString;
+    collectProtocolFeesAuthority: PubkeyString;
+    tokenVaultA: PubkeyString;
+    tokenVaultB: PubkeyString;
+    tokenDestinationA: PubkeyString;
+    tokenDestinationB: PubkeyString;
+    tokenProgram: PubkeyString;
   };
-  transfers: DecodedTransferInstruction[];
+  transfers: TransferAmount[];
 };
 
 export type DecodedAdminIncreaseLiquidityInstruction = {
@@ -302,24 +303,24 @@ export type DecodedAdminIncreaseLiquidityInstruction = {
     liquidity: BN;
   };
   accounts: {
-    whirlpoolsConfig: PublicKey;
-    whirlpool: PublicKey;
-    authority: PublicKey;
+    whirlpoolsConfig: PubkeyString;
+    whirlpool: PubkeyString;
+    authority: PubkeyString;
   };
 };
 
 export type DecodedInitializeConfigInstruction = {
   name: "initializeConfig";
   data: {
-    feeAuthority: PublicKey;
-    collectProtocolFeesAuthority: PublicKey;
-    rewardEmissionsSuperAuthority: PublicKey;
+    feeAuthority: PubkeyString;
+    collectProtocolFeesAuthority: PubkeyString;
+    rewardEmissionsSuperAuthority: PubkeyString;
     defaultProtocolFeeRate: number;
   };
   accounts: {
-    whirlpoolsConfig: PublicKey;
-    funder: PublicKey;
-    systemProgram: PublicKey;
+    whirlpoolsConfig: PubkeyString;
+    funder: PubkeyString;
+    systemProgram: PubkeyString;
   };
 };
 
@@ -330,11 +331,11 @@ export type DecodedInitializeFeeTierInstruction = {
     defaultFeeRate: number;
   };
   accounts: {
-    whirlpoolsConfig: PublicKey;
-    feeTier: PublicKey;
-    funder: PublicKey;
-    feeAuthority: PublicKey;
-    systemProgram: PublicKey;
+    whirlpoolsConfig: PubkeyString;
+    feeTier: PubkeyString;
+    funder: PubkeyString;
+    feeAuthority: PubkeyString;
+    systemProgram: PubkeyString;
   };
 };
 
@@ -345,17 +346,17 @@ export type DecodedInitializePoolInstruction = {
     initialSqrtPrice: BN;
   };
   accounts: {
-    whirlpoolsConfig: PublicKey;
-    tokenMintA: PublicKey;
-    tokenMintB: PublicKey;
-    funder: PublicKey;
-    whirlpool: PublicKey;
-    tokenVaultA: PublicKey;
-    tokenVaultB: PublicKey;
-    feeTier: PublicKey;
-    tokenProgram: PublicKey;
-    systemProgram: PublicKey;
-    rent: PublicKey;
+    whirlpoolsConfig: PubkeyString;
+    tokenMintA: PubkeyString;
+    tokenMintB: PubkeyString;
+    funder: PubkeyString;
+    whirlpool: PubkeyString;
+    tokenVaultA: PubkeyString;
+    tokenVaultB: PubkeyString;
+    feeTier: PubkeyString;
+    tokenProgram: PubkeyString;
+    systemProgram: PubkeyString;
+    rent: PubkeyString;
   };
 };
 
@@ -363,15 +364,15 @@ export type DecodedInitializePositionBundleInstruction = {
   name: "initializePositionBundle";
   data: {};
   accounts: {
-    positionBundle: PublicKey;
-    positionBundleMint: PublicKey;
-    positionBundleTokenAccount: PublicKey;
-    positionBundleOwner: PublicKey;
-    funder: PublicKey;
-    tokenProgram: PublicKey;
-    systemProgram: PublicKey;
-    rent: PublicKey;
-    associatedTokenProgram: PublicKey;
+    positionBundle: PubkeyString;
+    positionBundleMint: PubkeyString;
+    positionBundleTokenAccount: PubkeyString;
+    positionBundleOwner: PubkeyString;
+    funder: PubkeyString;
+    tokenProgram: PubkeyString;
+    systemProgram: PubkeyString;
+    rent: PubkeyString;
+    associatedTokenProgram: PubkeyString;
   };
 };
 
@@ -379,18 +380,18 @@ export type DecodedInitializePositionBundleWithMetadataInstruction = {
   name: "initializePositionBundleWithMetadata";
   data: {};
   accounts: {
-    positionBundle: PublicKey;
-    positionBundleMint: PublicKey;
-    positionBundleMetadata: PublicKey;
-    positionBundleTokenAccount: PublicKey;
-    positionBundleOwner: PublicKey;
-    funder: PublicKey;
-    metadataUpdateAuth: PublicKey;
-    tokenProgram: PublicKey;
-    systemProgram: PublicKey;
-    rent: PublicKey;
-    associatedTokenProgram: PublicKey;
-    metadataProgram: PublicKey;
+    positionBundle: PubkeyString;
+    positionBundleMint: PubkeyString;
+    positionBundleMetadata: PubkeyString;
+    positionBundleTokenAccount: PubkeyString;
+    positionBundleOwner: PubkeyString;
+    funder: PubkeyString;
+    metadataUpdateAuth: PubkeyString;
+    tokenProgram: PubkeyString;
+    systemProgram: PubkeyString;
+    rent: PubkeyString;
+    associatedTokenProgram: PubkeyString;
+    metadataProgram: PubkeyString;
   };
 };
 
@@ -400,14 +401,14 @@ export type DecodedInitializeRewardInstruction = {
     rewardIndex: number;
   };
   accounts: {
-    rewardAuthority: PublicKey;
-    funder: PublicKey;
-    whirlpool: PublicKey;
-    rewardMint: PublicKey;
-    rewardVault: PublicKey;
-    tokenProgram: PublicKey;
-    systemProgram: PublicKey;
-    rent: PublicKey;
+    rewardAuthority: PubkeyString;
+    funder: PubkeyString;
+    whirlpool: PubkeyString;
+    rewardMint: PubkeyString;
+    rewardVault: PubkeyString;
+    tokenProgram: PubkeyString;
+    systemProgram: PubkeyString;
+    rent: PubkeyString;
   };
 };
 
@@ -417,10 +418,10 @@ export type DecodedInitializeTickArrayInstruction = {
     startTickIndex: number;
   };
   accounts: {
-    whirlpool: PublicKey;
-    funder: PublicKey;
-    tickArray: PublicKey;
-    systemProgram: PublicKey;
+    whirlpool: PubkeyString;
+    funder: PubkeyString;
+    tickArray: PubkeyString;
+    systemProgram: PubkeyString;
   };
 };
 
@@ -428,12 +429,12 @@ export type DecodedDeletePositionBundleInstruction = {
   name: "deletePositionBundle";
   data: {};
   accounts: {
-    positionBundle: PublicKey;
-    positionBundleMint: PublicKey;
-    positionBundleTokenAccount: PublicKey;
-    positionBundleOwner: PublicKey;
-    receiver: PublicKey;
-    tokenProgram: PublicKey;
+    positionBundle: PubkeyString;
+    positionBundleMint: PubkeyString;
+    positionBundleTokenAccount: PubkeyString;
+    positionBundleOwner: PubkeyString;
+    receiver: PubkeyString;
+    tokenProgram: PubkeyString;
   };
 };
 
@@ -445,14 +446,14 @@ export type DecodedOpenBundledPositionInstruction = {
     tickUpperIndex: number;
   };
   accounts: {
-    bundledPosition: PublicKey;
-    positionBundle: PublicKey;
-    positionBundleTokenAccount: PublicKey;
-    positionBundleAuthority: PublicKey;
-    whirlpool: PublicKey;
-    funder: PublicKey;
-    systemProgram: PublicKey;
-    rent: PublicKey;
+    bundledPosition: PubkeyString;
+    positionBundle: PubkeyString;
+    positionBundleTokenAccount: PubkeyString;
+    positionBundleAuthority: PubkeyString;
+    whirlpool: PubkeyString;
+    funder: PubkeyString;
+    systemProgram: PubkeyString;
+    rent: PubkeyString;
   };
 };
 
@@ -462,11 +463,11 @@ export type DecodedCloseBundledPositionInstruction = {
     bundleIndex: number;
   };
   accounts: {
-    bundledPosition: PublicKey;
-    positionBundle: PublicKey;
-    positionBundleTokenAccount: PublicKey;
-    positionBundleAuthority: PublicKey;
-    receiver: PublicKey;
+    bundledPosition: PubkeyString;
+    positionBundle: PubkeyString;
+    positionBundleTokenAccount: PubkeyString;
+    positionBundleAuthority: PubkeyString;
+    receiver: PubkeyString;
   };
 };
 
@@ -474,9 +475,9 @@ export type DecodedSetCollectProtocolFeesAuthorityInstruction = {
   name: "setCollectProtocolFeesAuthority";
   data: {};
   accounts: {
-    whirlpoolsConfig: PublicKey;
-    collectProtocolFeesAuthority: PublicKey;
-    newCollectProtocolFeesAuthority: PublicKey;
+    whirlpoolsConfig: PubkeyString;
+    collectProtocolFeesAuthority: PubkeyString;
+    newCollectProtocolFeesAuthority: PubkeyString;
   };
 };
 
@@ -486,9 +487,9 @@ export type DecodedSetDefaultFeeRateInstruction = {
     defaultFeeRate: number;
   };
   accounts: {
-    whirlpoolsConfig: PublicKey;
-    feeTier: PublicKey;
-    feeAuthority: PublicKey;
+    whirlpoolsConfig: PubkeyString;
+    feeTier: PubkeyString;
+    feeAuthority: PubkeyString;
   };
 };
 
@@ -498,8 +499,8 @@ export type DecodedSetDefaultProtocolFeeRateInstruction = {
     defaultProtocolFeeRate: number;
   };
   accounts: {
-    whirlpoolsConfig: PublicKey;
-    feeAuthority: PublicKey;
+    whirlpoolsConfig: PubkeyString;
+    feeAuthority: PubkeyString;
   };
 };
 
@@ -507,9 +508,9 @@ export type DecodedSetFeeAuthorityInstruction = {
   name: "setFeeAuthority";
   data: {};
   accounts: {
-    whirlpoolsConfig: PublicKey;
-    feeAuthority: PublicKey;
-    newFeeAuthority: PublicKey;
+    whirlpoolsConfig: PubkeyString;
+    feeAuthority: PubkeyString;
+    newFeeAuthority: PubkeyString;
   };
 };
 
@@ -519,9 +520,9 @@ export type DecodedSetFeeRateInstruction = {
     feeRate: number;
   };
   accounts: {
-    whirlpoolsConfig: PublicKey;
-    whirlpool: PublicKey;
-    feeAuthority: PublicKey;
+    whirlpoolsConfig: PubkeyString;
+    whirlpool: PubkeyString;
+    feeAuthority: PubkeyString;
   };
 };
 
@@ -531,9 +532,9 @@ export type DecodedSetProtocolFeeRateInstruction = {
     protocolFeeRate: number;
   };
   accounts: {
-    whirlpoolsConfig: PublicKey;
-    whirlpool: PublicKey;
-    feeAuthority: PublicKey;
+    whirlpoolsConfig: PubkeyString;
+    whirlpool: PubkeyString;
+    feeAuthority: PubkeyString;
   };
 };
 
@@ -543,9 +544,9 @@ export type DecodedSetRewardAuthorityInstruction = {
     rewardIndex: number;
   };
   accounts: {
-    whirlpool: PublicKey;
-    rewardAuthority: PublicKey;
-    newRewardAuthority: PublicKey;
+    whirlpool: PubkeyString;
+    rewardAuthority: PubkeyString;
+    newRewardAuthority: PubkeyString;
   };
 };
 
@@ -555,10 +556,10 @@ export type DecodedSetRewardAuthorityBySuperAuthorityInstruction = {
     rewardIndex: number;
   };
   accounts: {
-    whirlpoolsConfig: PublicKey;
-    whirlpool: PublicKey;
-    rewardEmissionsSuperAuthority: PublicKey;
-    newRewardAuthority: PublicKey;
+    whirlpoolsConfig: PubkeyString;
+    whirlpool: PubkeyString;
+    rewardEmissionsSuperAuthority: PubkeyString;
+    newRewardAuthority: PubkeyString;
   };
 };
 
@@ -569,9 +570,9 @@ export type DecodedSetRewardEmissionsInstruction = {
     emissionsPerSecondX64: BN;
   };
   accounts: {
-    whirlpool: PublicKey;
-    rewardAuthority: PublicKey;
-    rewardVault: PublicKey;
+    whirlpool: PubkeyString;
+    rewardAuthority: PubkeyString;
+    rewardVault: PubkeyString;
   };
 };
 
@@ -579,8 +580,8 @@ export type DecodedSetRewardEmissionsSuperAuthorityInstruction = {
   name: "setRewardEmissionsSuperAuthority";
   data: {};
   accounts: {
-    whirlpoolsConfig: PublicKey;
-    rewardEmissionsSuperAuthority: PublicKey;
-    newRewardEmissionsSuperAuthority: PublicKey;
+    whirlpoolsConfig: PubkeyString;
+    rewardEmissionsSuperAuthority: PubkeyString;
+    newRewardEmissionsSuperAuthority: PubkeyString;
   };
 };
