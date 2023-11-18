@@ -48,6 +48,13 @@ import whirlpoolIDL from "./whirlpool.idl.json";
 
 const TOKEN_PROGRAM_ID_STRING = TOKEN_PROGRAM_ID.toBase58();
 
+// IDL IX: https://github.com/coral-xyz/anchor/blob/master/lang/src/idl.rs
+// - https://solscan.io/tx/5wM76xyEEPi87AAW8Lo6B5wLs45Q3bBW81mWTMK9Jou5KRSUpx7Duyqm4zXDY9SUXTbvWFCtUfE5SeQPzRdiA1vH
+// - https://solscan.io/tx/kuxdXN5pexa4iTorzt7eFTQrJjtTgxKRRzVgyyjUKJDofh3B6VF5nSQh9Zj4rKD4xz9ZacAgBgFZv1cKdDidSNK
+// - https://solscan.io/tx/3d9Scxo6V3gRBYahzukH7opSdSPZsxjN6rvTs59Tstdvz3wvZmcUucfRha1Y2iPjGpATLs9g13mjKDH6FNNoUM8i
+// - https://solscan.io/tx/5NVzf3NqVz3TfG49mwq28CdrMDbqmPKRHjXrg9HBZwRF3YtKFzDa21v3L31Tt9nrQmeeQDZRsPtnEQR3tbXVWaQi
+const IDL_IX_TAG = [0x40, 0xf4, 0xbc, 0x78, 0xa7, 0xe9, 0x69, 0x0a];
+
 export class WhirlpoolTransactionDecoder {
   private static coder = new BorshCoder<string, string>(whirlpoolIDL as Idl);
 
@@ -58,6 +65,9 @@ export class WhirlpoolTransactionDecoder {
     for (let i=0; i< instructions.length; i++) {
       const ix = instructions[i];
       if (ix.programId !== whirlpoolProgramId) continue;
+
+      // ignore IDL instructions
+      if (this.isIDLInstruction(ix.dataBase58)) continue;
 
       const decoded = this.coder.instruction.decode(ix.dataBase58, "base58");
       if (!decoded) {
@@ -169,6 +179,12 @@ export class WhirlpoolTransactionDecoder {
     }
 
     return decodedInstructions;
+  }
+
+  private static isIDLInstruction(dataBase58: string): boolean {
+    const dataU8array: Uint8Array = bs58.decode(dataBase58);
+    if (dataU8array.length < IDL_IX_TAG.length) return false;
+    return IDL_IX_TAG.every((v, i) => v === dataU8array[i]);
   }
 
   private static pickInstructions(transaction: TransactionJSON): Instruction[] {
