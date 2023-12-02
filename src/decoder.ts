@@ -196,7 +196,7 @@ export class WhirlpoolTransactionDecoder {
     const meta = transaction.result.meta;
     const message = transaction.result.transaction.message;
     const instructions = message.instructions;
-    const accounts = message.accountKeys;
+    const accounts = message.accountKeys.slice(); // shallow copy
 
     // loaded from ALT, order is accountKeys, writable, readonly
     meta.loadedAddresses?.writable.forEach((k) => accounts.push(k));
