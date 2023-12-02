@@ -160,7 +160,12 @@ export class WhirlpoolTransactionDecoder {
           decodedInstructions.push(this.decodeSetRewardEmissionsSuperAuthorityInstruction(decoded, ix.accounts));
           break;
         case "swap":
-          decodedInstructions.push(this.decodeSwapInstruction(decoded, ix.accounts, this.decodeTransferInstructions(instructions.slice(i+1, i+1+2))));
+          if (ix.accounts.length === 10 && transaction.result.transaction.signatures[0] === "42cBuWXNV1JMR6edFnup98JDq3wvrU3fdqwwp22CBNVw1QVoDEEeeU8Zs5NbSdXuBziBwGN9gMhu76mhsVkMRA9R") {
+            // special patch for old swap instruction without oracle account (slot at 124,291,577 (2022/03/10))
+            decodedInstructions.push(this.decodeSwapInstruction(decoded, [...ix.accounts, "FjUxBnbLJkc5juiPYyh1oEQbE9a6coknjgFfzh4rd3bp"], this.decodeTransferInstructions(instructions.slice(i+1, i+1+2))));
+          } else {
+            decodedInstructions.push(this.decodeSwapInstruction(decoded, ix.accounts, this.decodeTransferInstructions(instructions.slice(i+1, i+1+2))));
+          }
           break;
         case "twoHopSwap":
           decodedInstructions.push(this.decodeTwoHopSwapInstruction(decoded, ix.accounts, this.decodeTransferInstructions(instructions.slice(i+1, i+1+4))));

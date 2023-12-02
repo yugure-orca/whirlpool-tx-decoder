@@ -29,6 +29,7 @@ export type TransactionJSON = {
         accountKeys: string[];
         instructions: InstructionJSON[];
       };
+      signatures: string[];
     };
   };
 };
