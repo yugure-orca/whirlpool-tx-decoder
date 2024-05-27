@@ -103,7 +103,7 @@ export type DecodedWhirlpoolInstruction =
   DecodedInitializePoolV2Instruction |
   DecodedInitializeRewardV2Instruction |
   DecodedSetRewardEmissionsV2Instruction |
-  DecodedSwapV2 |
+  DecodedSwapV2Instruction |
   DecodedTwoHopSwapV2Instruction |
   DecodedInitializeConfigExtensionInstruction |
   DecodedInitializeTokenBadgeInstruction |
@@ -806,7 +806,7 @@ export type DecodedSetRewardEmissionsV2Instruction = {
   };
 };
 
-export type DecodedSwapV2 = {
+export type DecodedSwapV2Instruction = {
   name: "swapV2";
   data: {
     amount: BN;
@@ -838,7 +838,7 @@ export type DecodedSwapV2 = {
 };
 
 export type DecodedTwoHopSwapV2Instruction = {
-  name: "twoHopSwap";
+  name: "twoHopSwapV2";
   data: {
     amount: BN;
     otherAmountThreshold: BN;
