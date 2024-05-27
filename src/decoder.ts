@@ -41,6 +41,21 @@ import {
   DecodedSetRewardAuthorityBySuperAuthorityInstruction,
   DecodedSetRewardEmissionsInstruction,
   DecodedSetRewardEmissionsSuperAuthorityInstruction,
+  DecodedCollectFeesV2Instruction,
+  DecodedCollectProtocolFeesV2Instruction,
+  DecodedCollectRewardV2Instruction,
+  DecodedDecreaseLiquidityV2Instruction,
+  DecodedIncreaseLiquidityV2Instruction,
+  DecodedInitializePoolV2Instruction,
+  DecodedInitializeRewardV2Instruction,
+  DecodedSetRewardEmissionsV2Instruction,
+  DecodedSwapV2,
+  DecodedTwoHopSwapV2Instruction,
+  DecodedInitializeConfigExtensionInstruction,
+  DecodedInitializeTokenBadgeInstruction,
+  DecodedDeleteTokenBadgeInstruction,
+  DecodedSetConfigExtensionAuthorityInstruction,
+  DecodedSetTokenBadgeAuthorityInstruction,
 } from "./types";
 
 // IDL
