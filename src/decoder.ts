@@ -76,6 +76,7 @@ const MEMO_PROGRAM_ID_STRING = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr";
 // - https://solscan.io/tx/5NVzf3NqVz3TfG49mwq28CdrMDbqmPKRHjXrg9HBZwRF3YtKFzDa21v3L31Tt9nrQmeeQDZRsPtnEQR3tbXVWaQi
 const IDL_IX_TAG = [0x40, 0xf4, 0xbc, 0x78, 0xa7, 0xe9, 0x69, 0x0a];
 
+const TRANSFER_FEE_CONFIG_MEMO_REGEX = /^TFe: (\d+), (\d+)$/;
 const TRANSFER_FEE_CONFIG_MEMO_PREFIX = "TFe: ";
 const MEMO_TRANSFER_MEMO_PREFIX = "Orca ";
 
@@ -378,7 +379,7 @@ export class WhirlpoolTransactionDecoder {
           invariant(memo.startsWith(TRANSFER_FEE_CONFIG_MEMO_PREFIX) || memo.startsWith(MEMO_TRANSFER_MEMO_PREFIX), "Invalid memo");
 
           if (memo.startsWith(TRANSFER_FEE_CONFIG_MEMO_PREFIX)) {
-            const match = memo.match(/^TFe: (\d+), (\d+)$/);
+            const match = memo.match(TRANSFER_FEE_CONFIG_MEMO_REGEX);
             invariant(match, "Invalid TransferFeeConfig memo format");
 
             const basisPoints = parseInt(match[1]);
