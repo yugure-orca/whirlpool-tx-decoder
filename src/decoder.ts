@@ -363,8 +363,9 @@ export class WhirlpoolTransactionDecoder {
     const directCpiInstructions: Instruction[] = [];
     for (let i = 0; i < followingInstructions.length; i++) {
       const ix = followingInstructions[i];
-      if (ix.stackHeight > directCpiStackHeight) continue; // indirect CPI
-      if (ix.stackHeight < directCpiStackHeight) break; // end of direct CPI
+      const stackHeight = ix.stackHeight ?? 1; // top level is 1
+      if (stackHeight > directCpiStackHeight) continue; // indirect CPI
+      if (stackHeight < directCpiStackHeight) break; // end of direct CPI
       directCpiInstructions.push(ix);
     }
 
