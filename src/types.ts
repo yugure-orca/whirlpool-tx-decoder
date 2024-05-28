@@ -2,8 +2,35 @@ import { BN } from "@coral-xyz/anchor";
 
 export type PubkeyString = string;
 export type TransferAmount = bigint;
+export type TransferFeeConfig = {
+  basisPoints: number;
+  maximumFee: bigint;
+};
+export type TransferAmountWithTransferFeeConfig = {
+  amount: TransferAmount;
+  transferFeeConfig: TransferFeeConfig;
+};
+
+// RemainingAccounts
+export enum RemainingAccountsType {
+  TransferHookA,
+  TransferHookB,
+  TransferHookReward,
+  TransferHookInput,
+  TransferHookIntermediate,
+  TransferHookOutput,
+}
+export type RemainingAccountsSlice = {
+  accountsType: RemainingAccountsType;
+  length: number;
+}
+export type RemainingAccountsInfo = RemainingAccountsSlice[];
+export type RemainingAccounts = PubkeyString[];
 
 export type InstructionJSON = {
+  // null if block is too old (including inner instructions)
+  // null if instruction is top level
+  stackHeight: number | null;
   programIdIndex: number;
   accounts: number[];
   data: string;
@@ -35,6 +62,7 @@ export type TransactionJSON = {
 };
 
 export type Instruction = {
+  stackHeight: number | null;
   programId: PubkeyString;
   accounts: PubkeyString[];
   dataBase58: string;
@@ -72,6 +100,21 @@ export type DecodedWhirlpoolInstruction =
   DecodedSetRewardAuthorityBySuperAuthorityInstruction |
   DecodedSetRewardEmissionsInstruction |
   DecodedSetRewardEmissionsSuperAuthorityInstruction |
+  DecodedCollectFeesV2Instruction |
+  DecodedCollectProtocolFeesV2Instruction |
+  DecodedCollectRewardV2Instruction |
+  DecodedDecreaseLiquidityV2Instruction |
+  DecodedIncreaseLiquidityV2Instruction |
+  DecodedInitializePoolV2Instruction |
+  DecodedInitializeRewardV2Instruction |
+  DecodedSetRewardEmissionsV2Instruction |
+  DecodedSwapV2Instruction |
+  DecodedTwoHopSwapV2Instruction |
+  DecodedInitializeConfigExtensionInstruction |
+  DecodedInitializeTokenBadgeInstruction |
+  DecodedDeleteTokenBadgeInstruction |
+  DecodedSetConfigExtensionAuthorityInstruction |
+  DecodedSetTokenBadgeAuthorityInstruction |
   DecodedAdminIncreaseLiquidityInstruction;
 
 export type DecodedSwapInstruction = {
@@ -584,5 +627,320 @@ export type DecodedSetRewardEmissionsSuperAuthorityInstruction = {
     whirlpoolsConfig: PubkeyString;
     rewardEmissionsSuperAuthority: PubkeyString;
     newRewardEmissionsSuperAuthority: PubkeyString;
+  };
+};
+
+export type DecodedCollectFeesV2Instruction = {
+  name: "collectFeesV2";
+  data: {
+    remainingAccountsInfo: RemainingAccountsInfo;
+  };
+  accounts: {
+    whirlpool: PubkeyString;
+    positionAuthority: PubkeyString;
+    position: PubkeyString;
+    positionTokenAccount: PubkeyString;
+    tokenMintA: PubkeyString;
+    tokenMintB: PubkeyString;
+    tokenOwnerAccountA: PubkeyString;
+    tokenVaultA: PubkeyString;
+    tokenOwnerAccountB: PubkeyString;
+    tokenVaultB: PubkeyString;
+    tokenProgramA: PubkeyString;
+    tokenProgramB: PubkeyString;
+    memoProgram: PubkeyString;
+  };
+  remainingAccounts: RemainingAccounts;
+  transfers: TransferAmountWithTransferFeeConfig[];
+};
+
+export type DecodedCollectProtocolFeesV2Instruction = {
+  name: "collectProtocolFeesV2";
+  data: {
+    remainingAccountsInfo: RemainingAccountsInfo;
+  };
+  accounts: {
+    whirlpoolsConfig: PubkeyString;
+    whirlpool: PubkeyString;
+    collectProtocolFeesAuthority: PubkeyString;
+    tokenMintA: PubkeyString;
+    tokenMintB: PubkeyString;
+    tokenVaultA: PubkeyString;
+    tokenVaultB: PubkeyString;
+    tokenDestinationA: PubkeyString;
+    tokenDestinationB: PubkeyString;
+    tokenProgramA: PubkeyString;
+    tokenProgramB: PubkeyString;
+    memoProgram: PubkeyString;
+  };
+  remainingAccounts: RemainingAccounts;
+  transfers: TransferAmountWithTransferFeeConfig[];
+};
+
+export type DecodedCollectRewardV2Instruction = {
+  name: "collectRewardV2";
+  data: {
+    rewardIndex: number;
+    remainingAccountsInfo: RemainingAccountsInfo;
+  };
+  accounts: {
+    whirlpool: PubkeyString;
+    positionAuthority: PubkeyString;
+    position: PubkeyString;
+    positionTokenAccount: PubkeyString;
+    rewardOwnerAccount: PubkeyString;
+    rewardMint: PubkeyString;
+    rewardVault: PubkeyString;
+    rewardTokenProgram: PubkeyString;
+    memoProgram: PubkeyString;
+  };
+  remainingAccounts: RemainingAccounts;
+  transfers: TransferAmountWithTransferFeeConfig[];
+};
+
+export type DecodedDecreaseLiquidityV2Instruction = {
+  name: "decreaseLiquidityV2";
+  data: {
+    liquidityAmount: BN;
+    tokenMinA: BN;
+    tokenMinB: BN;
+    remainingAccountsInfo: RemainingAccountsInfo;
+  };
+  accounts: {
+    whirlpool: PubkeyString;
+    tokenProgramA: PubkeyString;
+    tokenProgramB: PubkeyString;
+    memoProgram: PubkeyString;
+    positionAuthority: PubkeyString;
+    position: PubkeyString;
+    positionTokenAccount: PubkeyString;
+    tokenMintA: PubkeyString;
+    tokenMintB: PubkeyString;
+    tokenOwnerAccountA: PubkeyString;
+    tokenOwnerAccountB: PubkeyString;
+    tokenVaultA: PubkeyString;
+    tokenVaultB: PubkeyString;
+    tickArrayLower: PubkeyString;
+    tickArrayUpper: PubkeyString;
+  };
+  remainingAccounts: RemainingAccounts;
+  transfers: TransferAmountWithTransferFeeConfig[];
+};
+
+export type DecodedIncreaseLiquidityV2Instruction = {
+  name: "increaseLiquidityV2";
+  data: {
+    liquidityAmount: BN;
+    tokenMaxA: BN;
+    tokenMaxB: BN;
+    remainingAccountsInfo: RemainingAccountsInfo;
+  };
+  accounts: {
+    whirlpool: PubkeyString;
+    tokenProgramA: PubkeyString;
+    tokenProgramB: PubkeyString;
+    memoProgram: PubkeyString;
+    positionAuthority: PubkeyString;
+    position: PubkeyString;
+    positionTokenAccount: PubkeyString;
+    tokenMintA: PubkeyString;
+    tokenMintB: PubkeyString;
+    tokenOwnerAccountA: PubkeyString;
+    tokenOwnerAccountB: PubkeyString;
+    tokenVaultA: PubkeyString;
+    tokenVaultB: PubkeyString;
+    tickArrayLower: PubkeyString;
+    tickArrayUpper: PubkeyString;
+  };
+  remainingAccounts: RemainingAccounts;
+  transfers: TransferAmountWithTransferFeeConfig[];
+};
+
+export type DecodedInitializePoolV2Instruction = {
+  name: "initializePoolV2";
+  data: {
+    tickSpacing: number;
+    initialSqrtPrice: BN;
+  };
+  accounts: {
+    whirlpoolsConfig: PubkeyString;
+    tokenMintA: PubkeyString;
+    tokenMintB: PubkeyString;
+    tokenBadgeA: PubkeyString;
+    tokenBadgeB: PubkeyString;
+    funder: PubkeyString;
+    whirlpool: PubkeyString;
+    tokenVaultA: PubkeyString;
+    tokenVaultB: PubkeyString;
+    feeTier: PubkeyString;
+    tokenProgramA: PubkeyString;
+    tokenProgramB: PubkeyString;
+    systemProgram: PubkeyString;
+    rent: PubkeyString;
+  };
+};
+
+export type DecodedInitializeRewardV2Instruction = {
+  name: "initializeRewardV2";
+  data: {
+    rewardIndex: number;
+  };
+  accounts: {
+    rewardAuthority: PubkeyString;
+    funder: PubkeyString;
+    whirlpool: PubkeyString;
+    rewardMint: PubkeyString;
+    rewardTokenBadge: PubkeyString;
+    rewardVault: PubkeyString;
+    rewardTokenProgram: PubkeyString;
+    systemProgram: PubkeyString;
+    rent: PubkeyString;
+  };
+};
+
+export type DecodedSetRewardEmissionsV2Instruction = {
+  name: "setRewardEmissionsV2";
+  data: {
+    rewardIndex: number;
+    emissionsPerSecondX64: BN;
+  };
+  accounts: {
+    whirlpool: PubkeyString;
+    rewardAuthority: PubkeyString;
+    rewardVault: PubkeyString;
+  };
+};
+
+export type DecodedSwapV2Instruction = {
+  name: "swapV2";
+  data: {
+    amount: BN;
+    otherAmountThreshold: BN;
+    sqrtPriceLimit: BN;
+    amountSpecifiedIsInput: boolean;
+    aToB: boolean;
+    remainingAccountsInfo: RemainingAccountsInfo;
+  };
+  accounts: {
+    tokenProgramA: PubkeyString;
+    tokenProgramB: PubkeyString;
+    memoProgram: PubkeyString;
+    tokenAuthority: PubkeyString;
+    whirlpool: PubkeyString;
+    tokenMintA: PubkeyString;
+    tokenMintB: PubkeyString;
+    tokenOwnerAccountA: PubkeyString;
+    tokenVaultA: PubkeyString;
+    tokenOwnerAccountB: PubkeyString;
+    tokenVaultB: PubkeyString;
+    tickArray0: PubkeyString;
+    tickArray1: PubkeyString;
+    tickArray2: PubkeyString;
+    oracle: PubkeyString;
+  };
+  remainingAccounts: RemainingAccounts;
+  transfers: TransferAmountWithTransferFeeConfig[];
+};
+
+export type DecodedTwoHopSwapV2Instruction = {
+  name: "twoHopSwapV2";
+  data: {
+    amount: BN;
+    otherAmountThreshold: BN;
+    amountSpecifiedIsInput: boolean;
+    aToBOne: boolean;
+    aToBTwo: boolean;
+    sqrtPriceLimitOne: BN;
+    sqrtPriceLimitTwo: BN;
+    remainingAccountsInfo: RemainingAccountsInfo;
+  };
+  accounts: {
+    whirlpoolOne: PubkeyString;
+    whirlpoolTwo: PubkeyString;
+    tokenMintInput: PubkeyString;
+    tokenMintIntermediate: PubkeyString;
+    tokenMintOutput: PubkeyString;
+    tokenProgramInput: PubkeyString;
+    tokenProgramIntermediate: PubkeyString;
+    tokenProgramOutput: PubkeyString;
+    tokenOwnerAccountInput : PubkeyString;
+    tokenVaultOneInput: PubkeyString;
+    tokenVaultOneIntermediate: PubkeyString;
+    tokenVaultTwoIntermediate: PubkeyString;
+    tokenVaultTwoOutput: PubkeyString;
+    tokenOwnerAccountOutput: PubkeyString;
+    tokenAuthority: PubkeyString;
+    tickArrayOne0: PubkeyString;
+    tickArrayOne1: PubkeyString;
+    tickArrayOne2: PubkeyString;
+    tickArrayTwo0: PubkeyString;
+    tickArrayTwo1: PubkeyString;
+    tickArrayTwo2: PubkeyString;
+    oracleOne: PubkeyString;
+    oracleTwo: PubkeyString;
+    memoProgram: PubkeyString;
+  };
+  remainingAccounts: RemainingAccounts;
+  transfers: TransferAmountWithTransferFeeConfig[];
+};
+
+export type DecodedInitializeConfigExtensionInstruction = {
+  name: "initializeConfigExtension";
+  data: {};
+  accounts: {
+    whirlpoolsConfig: PubkeyString;
+    whirlpoolsConfigExtension: PubkeyString;
+    funder: PubkeyString;
+    feeAuthority: PubkeyString;
+    systemProgram: PubkeyString;
+  };
+};
+
+export type DecodedInitializeTokenBadgeInstruction = {
+  name: "initializeTokenBadge";
+  data: {};
+  accounts: {
+    whirlpoolsConfig: PubkeyString;
+    whirlpoolsConfigExtension: PubkeyString;
+    tokenBadgeAuthority: PubkeyString;
+    tokenMint: PubkeyString;
+    tokenBadge: PubkeyString;
+    funder: PubkeyString;
+    systemProgram: PubkeyString;
+  };
+};
+
+export type DecodedDeleteTokenBadgeInstruction = {
+  name: "deleteTokenBadge";
+  data: {};
+  accounts: {
+    whirlpoolsConfig: PubkeyString;
+    whirlpoolsConfigExtension: PubkeyString;
+    tokenBadgeAuthority: PubkeyString;
+    tokenMint: PubkeyString;
+    tokenBadge: PubkeyString;
+    receiver: PubkeyString;
+  };
+};
+
+export type DecodedSetConfigExtensionAuthorityInstruction = {
+  name: "setConfigExtensionAuthority";
+  data: {};
+  accounts: {
+    whirlpoolsConfig: PubkeyString;
+    whirlpoolsConfigExtension: PubkeyString;
+    configExtensionAuthority: PubkeyString;
+    newConfigExtensionAuthority: PubkeyString;
+  };
+};
+
+export type DecodedSetTokenBadgeAuthorityInstruction = {
+  name: "setTokenBadgeAuthority";
+  data: {};
+  accounts: {
+    whirlpoolsConfig: PubkeyString;
+    whirlpoolsConfigExtension: PubkeyString;
+    configExtensionAuthority: PubkeyString;
+    newTokenBadgeAuthority: PubkeyString;
   };
 };
