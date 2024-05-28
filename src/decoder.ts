@@ -1,5 +1,5 @@
 import { BorshCoder, Idl, Instruction as AnchorInstruction } from "@coral-xyz/anchor";
-import { TOKEN_PROGRAM_ID, transferInstructionData } from "@solana/spl-token";
+import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, transferInstructionData, transferCheckedInstructionData } from "@solana/spl-token";
 import invariant from "tiny-invariant"
 import bs58 from "bs58";
 import {
@@ -58,12 +58,16 @@ import {
   DecodedSetTokenBadgeAuthorityInstruction,
   TransferAmountWithTransferFeeConfig,
   RemainingAccountsInfo,
+  RemainingAccountsType,
+  TransferFeeConfig,
 } from "./types";
 
 // IDL
 import whirlpoolIDL from "./whirlpool.idl.json";
 
 const TOKEN_PROGRAM_ID_STRING = TOKEN_PROGRAM_ID.toBase58();
+const TOKEN_2022_PROGRAM_ID_STRING = TOKEN_2022_PROGRAM_ID.toBase58();
+const MEMO_PROGRAM_ID_STRING = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr";
 
 // IDL IX: https://github.com/coral-xyz/anchor/blob/master/lang/src/idl.rs
 // - https://solscan.io/tx/5wM76xyEEPi87AAW8Lo6B5wLs45Q3bBW81mWTMK9Jou5KRSUpx7Duyqm4zXDY9SUXTbvWFCtUfE5SeQPzRdiA1vH
@@ -72,8 +76,14 @@ const TOKEN_PROGRAM_ID_STRING = TOKEN_PROGRAM_ID.toBase58();
 // - https://solscan.io/tx/5NVzf3NqVz3TfG49mwq28CdrMDbqmPKRHjXrg9HBZwRF3YtKFzDa21v3L31Tt9nrQmeeQDZRsPtnEQR3tbXVWaQi
 const IDL_IX_TAG = [0x40, 0xf4, 0xbc, 0x78, 0xa7, 0xe9, 0x69, 0x0a];
 
+const TRANSFER_FEE_CONFIG_MEMO_PREFIX = "TFe: ";
+const MEMO_TRANSFER_MEMO_PREFIX = "Orca ";
+
+const ZERO_TRANSFER_FEE_CONFIG: TransferFeeConfig = { basisPoints: 0, maximumFee: 0n };
+
 export class WhirlpoolTransactionDecoder {
   private static coder = new BorshCoder<string, string>(whirlpoolIDL as Idl);
+  private static textDecoder = new TextDecoder();
 
   public static decode(transaction: TransactionJSON, whirlpoolProgramId: PubkeyString): DecodedWhirlpoolInstruction[] {
     const instructions = this.pickInstructions(transaction);
@@ -192,19 +202,19 @@ export class WhirlpoolTransactionDecoder {
           break;
         // V2
         case "collectFeesV2":
-          decodedInstructions.push(this.decodeCollectFeesV2Instruction(decoded, ix.accounts, instructions.slice(i+1)));
+          decodedInstructions.push(this.decodeCollectFeesV2Instruction(decoded, ix.accounts, this.decodeV2TransferInstructions(2, instructions.slice(i+1))));
           break;
         case "collectProtocolFeesV2":
-          decodedInstructions.push(this.decodeCollectProtocolFeesV2Instruction(decoded, ix.accounts, instructions.slice(i+1)));
+          decodedInstructions.push(this.decodeCollectProtocolFeesV2Instruction(decoded, ix.accounts, this.decodeV2TransferInstructions(2, instructions.slice(i+1))));
           break;
         case "collectRewardV2":
-          decodedInstructions.push(this.decodeCollectRewardV2Instruction(decoded, ix.accounts, instructions.slice(i+1)));
+          decodedInstructions.push(this.decodeCollectRewardV2Instruction(decoded, ix.accounts, this.decodeV2TransferInstructions(1, instructions.slice(i+1))));
           break;
         case "decreaseLiquidityV2":
-          decodedInstructions.push(this.decodeDecreaseLiquidityV2Instruction(decoded, ix.accounts, instructions.slice(i+1)));
+          decodedInstructions.push(this.decodeDecreaseLiquidityV2Instruction(decoded, ix.accounts, this.decodeV2TransferInstructions(2, instructions.slice(i+1))));
           break;
         case "increaseLiquidityV2":
-          decodedInstructions.push(this.decodeIncreaseLiquidityV2Instruction(decoded, ix.accounts, instructions.slice(i+1)));
+          decodedInstructions.push(this.decodeIncreaseLiquidityV2Instruction(decoded, ix.accounts, this.decodeV2TransferInstructions(2, instructions.slice(i+1))));
           break;
         case "initializePoolV2":
           decodedInstructions.push(this.decodeInitializePoolV2Instruction(decoded, ix.accounts));
@@ -216,10 +226,10 @@ export class WhirlpoolTransactionDecoder {
           decodedInstructions.push(this.decodeSetRewardEmissionsV2Instruction(decoded, ix.accounts));
           break;
         case "swapV2":
-          decodedInstructions.push(this.decodeSwapV2Instruction(decoded, ix.accounts, instructions.slice(i+1)));
+          decodedInstructions.push(this.decodeSwapV2Instruction(decoded, ix.accounts, this.decodeV2TransferInstructions(2, instructions.slice(i+1))));
           break;
         case "twoHopSwapV2":
-          decodedInstructions.push(this.decodeTwoHopSwapV2Instruction(decoded, ix.accounts, instructions.slice(i+1)));
+          decodedInstructions.push(this.decodeTwoHopSwapV2Instruction(decoded, ix.accounts, this.decodeV2TransferInstructions(3, instructions.slice(i+1))));
           break;
         // ConfigExtension & TokenBadge
         case "initializeConfigExtension":
@@ -279,6 +289,7 @@ export class WhirlpoolTransactionDecoder {
     for (let cursor = 0; cursor < allInstructions.length; cursor++) {
       const ix = allInstructions[cursor];
       decodedInstructions.push({
+        stackHeight: ix.stackHeight,
         programId: accounts[ix.programIdIndex],
         accounts: ix.accounts.map((i) => accounts[i]),
         dataBase58: ix.data,
@@ -304,14 +315,90 @@ export class WhirlpoolTransactionDecoder {
     return decoded.amount;
   }
 
-  private static decodeRemainingAccountsInfo(remainingAccountsInfo: any): RemainingAccountsInfo {
-    console.log("NOT IMPLEMENTED YET: decodeRemainingAccountsInfo", remainingAccountsInfo);
-    return [];
+  private static decodeTransferCheckedInstruction(ix: Instruction): TransferAmount {
+    invariant(ix.programId === TOKEN_PROGRAM_ID_STRING || ix.programId === TOKEN_2022_PROGRAM_ID_STRING, "Invalid program id");
+    invariant(ix.accounts.length >= 4, "Invalid number of accounts");
+
+    const dataU8array = bs58.decode(ix.dataBase58);
+    const dataBuffer = Buffer.from(dataU8array);
+
+    const decoded = transferCheckedInstructionData.decode(dataBuffer);
+
+    return decoded.amount;
   }
 
-  private static decodeV2TransferInstructions(nextInstructions: Instruction[]): TransferAmountWithTransferFeeConfig[] {
-    console.log("NOT IMPLEMENTED YET: decodeV2TransferInstructions", nextInstructions.slice(0, 3), "...");
-    return [];
+  private static decodeRemainingAccountsInfo(remainingAccountsInfo: { slices: { accountsType: { [k: string]: string }, length: number }[] } | null): RemainingAccountsInfo {
+    if (remainingAccountsInfo === null) return [];
+
+    const result = remainingAccountsInfo.slices.map((r) => {
+      invariant("accountsType" in r, "Invalid accounts type");
+      invariant("length" in r, "Invalid length");
+
+      const length = r.length;
+      const keys = Object.keys(r.accountsType);
+      invariant(keys.length === 1, "Invalid accounts type");
+      switch (keys[0]) {
+        case "transferHookA": return { accountsType: RemainingAccountsType.TransferHookA, length };
+        case "transferHookB": return { accountsType: RemainingAccountsType.TransferHookB, length };
+        case "transferHookReward": return { accountsType: RemainingAccountsType.TransferHookReward, length };
+        case "transferHookInput": return { accountsType: RemainingAccountsType.TransferHookInput, length };
+        case "transferHookIntermediate": return { accountsType: RemainingAccountsType.TransferHookIntermediate, length };
+        case "transferHookOutput": return { accountsType: RemainingAccountsType.TransferHookOutput, length };
+        default:
+          invariant(false, `Unknown account type: ${keys[0]}`);
+      }
+    });
+    return result;
+  }
+
+  private static decodeV2TransferInstructions(expectedTransfers: number, followingInstructions: Instruction[]): TransferAmountWithTransferFeeConfig[] {
+    invariant(followingInstructions.length >= 1, "Invalid number of instructions");
+
+    // strongly depends on stack height
+    const directCpiStackHeight = followingInstructions[0].stackHeight;
+    invariant(directCpiStackHeight !== null, "Stack height is null");
+    invariant(directCpiStackHeight >= 2, "Invalid stack height");
+
+    const directCpiInstructions: Instruction[] = [];
+    for (let i = 0; i < followingInstructions.length; i++) {
+      const ix = followingInstructions[i];
+      if (ix.stackHeight > directCpiStackHeight) continue; // indirect CPI
+      if (ix.stackHeight < directCpiStackHeight) break; // end of direct CPI
+      directCpiInstructions.push(ix);
+    }
+
+    const transfers: TransferAmountWithTransferFeeConfig[] = [];
+    let transferFeeConfig = ZERO_TRANSFER_FEE_CONFIG;
+    for (let i = 0; i < directCpiInstructions.length; i++) {
+      const ix = directCpiInstructions[i];
+      switch (ix.programId) {
+        case MEMO_PROGRAM_ID_STRING:
+          const memo = this.textDecoder.decode(bs58.decode(ix.dataBase58));
+          // memo must be TransferConfig memo or MemoTransfer memo
+          invariant(memo.startsWith(TRANSFER_FEE_CONFIG_MEMO_PREFIX) || memo.startsWith(MEMO_TRANSFER_MEMO_PREFIX), "Invalid memo");
+
+          if (memo.startsWith(TRANSFER_FEE_CONFIG_MEMO_PREFIX)) {
+            const match = memo.match(/^TFe: (\d+), (\d+)$/);
+            invariant(match, "Invalid TransferFeeConfig memo format");
+
+            const basisPoints = parseInt(match[1]);
+            const maximumFee = BigInt(match[2]);
+            transferFeeConfig = { basisPoints, maximumFee };
+          }
+          break;
+        case TOKEN_PROGRAM_ID_STRING:
+        case TOKEN_2022_PROGRAM_ID_STRING:
+          const amount = this.decodeTransferCheckedInstruction(ix);
+          transfers.push({ amount, transferFeeConfig });
+          transferFeeConfig = ZERO_TRANSFER_FEE_CONFIG;
+          break;
+        default:
+          invariant(false, "Invalid program id");
+      }
+    }
+
+    invariant(transfers.length === expectedTransfers, `Invalid number of transfers: ${transfers.length}`);
+    return transfers;
   }
 
   private static decodeSwapInstruction(ix: AnchorInstruction, accounts: PubkeyString[], transfers: TransferAmount[]): DecodedSwapInstruction {
@@ -955,7 +1042,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeCollectFeesV2Instruction(ix: AnchorInstruction, accounts: PubkeyString[], nextInstructions: Instruction[]): DecodedCollectFeesV2Instruction {
+  private static decodeCollectFeesV2Instruction(ix: AnchorInstruction, accounts: PubkeyString[], transfers: TransferAmountWithTransferFeeConfig[]): DecodedCollectFeesV2Instruction {
     invariant(ix.name === "collectFeesV2", "Invalid instruction name");
     invariant(accounts.length >= 13, "Invalid accounts");
     return {
@@ -979,11 +1066,11 @@ export class WhirlpoolTransactionDecoder {
         memoProgram: accounts[12],        
       },
       remainingAccounts: accounts.slice(13),
-      transfers: this.decodeV2TransferInstructions(nextInstructions),
+      transfers,
     };
   }
 
-  private static decodeCollectProtocolFeesV2Instruction(ix: AnchorInstruction, accounts: PubkeyString[], nextInstructions: Instruction[]): DecodedCollectProtocolFeesV2Instruction {
+  private static decodeCollectProtocolFeesV2Instruction(ix: AnchorInstruction, accounts: PubkeyString[], transfers: TransferAmountWithTransferFeeConfig[]): DecodedCollectProtocolFeesV2Instruction {
     invariant(ix.name === "collectProtocolFeesV2", "Invalid instruction name");
     invariant(accounts.length >= 12, "Invalid accounts");
     return {
@@ -1006,11 +1093,11 @@ export class WhirlpoolTransactionDecoder {
         memoProgram: accounts[11],
       },
       remainingAccounts: accounts.slice(12),
-      transfers: this.decodeV2TransferInstructions(nextInstructions),
+      transfers,
     };
   }
 
-  private static decodeCollectRewardV2Instruction(ix: AnchorInstruction, accounts: PubkeyString[], nextInstructions: Instruction[]): DecodedCollectRewardV2Instruction {
+  private static decodeCollectRewardV2Instruction(ix: AnchorInstruction, accounts: PubkeyString[], transfers: TransferAmountWithTransferFeeConfig[]): DecodedCollectRewardV2Instruction {
     invariant(ix.name === "collectRewardV2", "Invalid instruction name");
     invariant(accounts.length >= 9, "Invalid accounts");
     return {
@@ -1031,11 +1118,11 @@ export class WhirlpoolTransactionDecoder {
         memoProgram: accounts[8],
       },
       remainingAccounts: accounts.slice(9),
-      transfers: this.decodeV2TransferInstructions(nextInstructions),
+      transfers,
     };
   }
 
-  private static decodeDecreaseLiquidityV2Instruction(ix: AnchorInstruction, accounts: PubkeyString[], nextInstructions: Instruction[]): DecodedDecreaseLiquidityV2Instruction {
+  private static decodeDecreaseLiquidityV2Instruction(ix: AnchorInstruction, accounts: PubkeyString[], transfers: TransferAmountWithTransferFeeConfig[]): DecodedDecreaseLiquidityV2Instruction {
     invariant(ix.name === "decreaseLiquidityV2", "Invalid instruction name");
     invariant(accounts.length >= 15, "Invalid accounts");
     return {
@@ -1064,11 +1151,11 @@ export class WhirlpoolTransactionDecoder {
         tickArrayUpper: accounts[14],
       },
       remainingAccounts: accounts.slice(15),
-      transfers: this.decodeV2TransferInstructions(nextInstructions),
+      transfers,
     };
   }
 
-  private static decodeIncreaseLiquidityV2Instruction(ix: AnchorInstruction, accounts: PubkeyString[], nextInstructions: Instruction[]): DecodedIncreaseLiquidityV2Instruction {
+  private static decodeIncreaseLiquidityV2Instruction(ix: AnchorInstruction, accounts: PubkeyString[], transfers: TransferAmountWithTransferFeeConfig[]): DecodedIncreaseLiquidityV2Instruction {
     invariant(ix.name === "increaseLiquidityV2", "Invalid instruction name");
     invariant(accounts.length >= 15, "Invalid accounts");
     return {
@@ -1097,7 +1184,7 @@ export class WhirlpoolTransactionDecoder {
         tickArrayUpper: accounts[14],
       },
       remainingAccounts: accounts.slice(15),
-      transfers: this.decodeV2TransferInstructions(nextInstructions),
+      transfers,
     };
   }
 
@@ -1168,7 +1255,7 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeSwapV2Instruction(ix: AnchorInstruction, accounts: PubkeyString[], nextInstructions: Instruction[]): DecodedSwapV2Instruction {
+  private static decodeSwapV2Instruction(ix: AnchorInstruction, accounts: PubkeyString[], transfers: TransferAmountWithTransferFeeConfig[]): DecodedSwapV2Instruction {
     invariant(ix.name === "swapV2", "Invalid instruction name");
     invariant(accounts.length >= 15, "Invalid accounts");
     return {
@@ -1199,11 +1286,11 @@ export class WhirlpoolTransactionDecoder {
         oracle: accounts[14],
       },
       remainingAccounts: accounts.slice(15),
-      transfers: this.decodeV2TransferInstructions(nextInstructions),
+      transfers,
     };
   }
 
-  private static decodeTwoHopSwapV2Instruction(ix: AnchorInstruction, accounts: PubkeyString[], nextInstructions: Instruction[]): DecodedTwoHopSwapV2Instruction {
+  private static decodeTwoHopSwapV2Instruction(ix: AnchorInstruction, accounts: PubkeyString[], transfers: TransferAmountWithTransferFeeConfig[]): DecodedTwoHopSwapV2Instruction {
     invariant(ix.name === "twoHopSwapV2", "Invalid instruction name");
     invariant(accounts.length >= 24, "Invalid accounts");
     return {
@@ -1245,7 +1332,7 @@ export class WhirlpoolTransactionDecoder {
         memoProgram: accounts[23],
       },
       remainingAccounts: accounts.slice(24),
-      transfers: this.decodeV2TransferInstructions(nextInstructions),
+      transfers,
     };
   }
 

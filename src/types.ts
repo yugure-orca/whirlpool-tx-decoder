@@ -2,12 +2,13 @@ import { BN } from "@coral-xyz/anchor";
 
 export type PubkeyString = string;
 export type TransferAmount = bigint;
+export type TransferFeeConfig = {
+  basisPoints: number;
+  maximumFee: bigint;
+};
 export type TransferAmountWithTransferFeeConfig = {
-  amount: bigint;
-  transferFeeConfig: {
-    basisPoints: number;
-    maximumFee: bigint;
-  };
+  amount: TransferAmount;
+  transferFeeConfig: TransferFeeConfig;
 };
 
 // RemainingAccounts
@@ -27,6 +28,9 @@ export type RemainingAccountsInfo = RemainingAccountsSlice[];
 export type RemainingAccounts = PubkeyString[];
 
 export type InstructionJSON = {
+  // null if block is too old (including inner instructions)
+  // null if instruction is top level
+  stackHeight: number | null;
   programIdIndex: number;
   accounts: number[];
   data: string;
@@ -58,6 +62,7 @@ export type TransactionJSON = {
 };
 
 export type Instruction = {
+  stackHeight: number | null;
   programId: PubkeyString;
   accounts: PubkeyString[];
   dataBase58: string;
