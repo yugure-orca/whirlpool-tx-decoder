@@ -26,11 +26,10 @@ describe("v2", () => {
       expect(ixs[0].name).toEqual("collectFeesV2");
       expect((ixs[0] as DecodedCollectFeesV2Instruction).data.remainingAccountsInfo.length).toEqual(0);
       expect((ixs[0] as DecodedCollectFeesV2Instruction).remainingAccounts.length).toEqual(0);
-      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers.length).toEqual(2)
-      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[0].transferFeeConfig.basisPoints).toEqual(0);
-      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[0].transferFeeConfig.maximumFee).toEqual(0n);
-      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[1].transferFeeConfig.basisPoints).toEqual(0);
-      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[1].transferFeeConfig.maximumFee).toEqual(0n);
+      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers.length).toEqual(2);
+      // TransferFeeConfig extension is not initialized
+      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[0].transferFeeConfig).toBeNull();
+      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[1].transferFeeConfig).toBeNull();
       //console.log(JSON.stringify(ixs, null, 2));
     });
 
@@ -44,11 +43,10 @@ describe("v2", () => {
       expect(ixs[0].name).toEqual("collectFeesV2");
       expect((ixs[0] as DecodedCollectFeesV2Instruction).data.remainingAccountsInfo.length).toEqual(0);
       expect((ixs[0] as DecodedCollectFeesV2Instruction).remainingAccounts.length).toEqual(0);
-      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers.length).toEqual(2)
-      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[0].transferFeeConfig.basisPoints).toEqual(0);
-      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[0].transferFeeConfig.maximumFee).toEqual(0n);
-      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[1].transferFeeConfig.basisPoints).toEqual(0);
-      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[1].transferFeeConfig.maximumFee).toEqual(0n);
+      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers.length).toEqual(2);
+      // TransferFeeConfig extension is not initialized
+      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[0].transferFeeConfig).toBeNull();
+      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[1].transferFeeConfig).toBeNull();
       //console.log(JSON.stringify(ixs, null, 2));
     });
 
@@ -66,11 +64,10 @@ describe("v2", () => {
       expect((ixs[0] as DecodedCollectFeesV2Instruction).data.remainingAccountsInfo[1].accountsType).toEqual(1); // TransferHookB
       expect((ixs[0] as DecodedCollectFeesV2Instruction).data.remainingAccountsInfo[1].length).toEqual(3);
       expect((ixs[0] as DecodedCollectFeesV2Instruction).remainingAccounts.length).toEqual(6);
-      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers.length).toEqual(2)
-      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[0].transferFeeConfig.basisPoints).toEqual(0);
-      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[0].transferFeeConfig.maximumFee).toEqual(0n);
-      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[1].transferFeeConfig.basisPoints).toEqual(0);
-      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[1].transferFeeConfig.maximumFee).toEqual(0n);
+      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers.length).toEqual(2);
+      // TransferFeeConfig extension is not initialized
+      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[0].transferFeeConfig).toBeNull();
+      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[1].transferFeeConfig).toBeNull();
       //console.log(JSON.stringify(ixs, null, 2));
     });
 
@@ -84,7 +81,7 @@ describe("v2", () => {
       expect(ixs[0].name).toEqual("collectFeesV2");
       expect((ixs[0] as DecodedCollectFeesV2Instruction).data.remainingAccountsInfo.length).toEqual(0);
       expect((ixs[0] as DecodedCollectFeesV2Instruction).remainingAccounts.length).toEqual(0);
-      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers.length).toEqual(2)
+      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers.length).toEqual(2);
       expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[0].transferFeeConfig.basisPoints).toEqual(500);
       expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[0].transferFeeConfig.maximumFee).toEqual(18446744073709551615n);
       expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[1].transferFeeConfig.basisPoints).toEqual(1000);
@@ -102,7 +99,7 @@ describe("v2", () => {
       expect(ixs[0].name).toEqual("collectFeesV2");
       expect((ixs[0] as DecodedCollectFeesV2Instruction).data.remainingAccountsInfo.length).toEqual(0);
       expect((ixs[0] as DecodedCollectFeesV2Instruction).remainingAccounts.length).toEqual(0);
-      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers.length).toEqual(2)
+      expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers.length).toEqual(2);
       expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[0].transferFeeConfig.basisPoints).toEqual(500);
       expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[0].transferFeeConfig.maximumFee).toEqual(18446744073709551615n);
       expect((ixs[0] as DecodedCollectFeesV2Instruction).transfers[1].transferFeeConfig.basisPoints).toEqual(1000);
@@ -120,7 +117,7 @@ describe("v2", () => {
       for (const ix of ixs) {
         expect(ix.name).toEqual("collectFeesV2");
         expect((ix as DecodedCollectFeesV2Instruction).remainingAccounts.length).toEqual(6);
-        expect((ix as DecodedCollectFeesV2Instruction).transfers.length).toEqual(2)
+        expect((ix as DecodedCollectFeesV2Instruction).transfers.length).toEqual(2);
       }
       //console.log(JSON.stringify(ixs, null, 2));
     });
@@ -137,7 +134,7 @@ describe("v2", () => {
       expect(ixs[0].name).toEqual("collectProtocolFeesV2");
       expect((ixs[0] as DecodedCollectProtocolFeesV2Instruction).data.remainingAccountsInfo.length).toEqual(0);
       expect((ixs[0] as DecodedCollectProtocolFeesV2Instruction).remainingAccounts.length).toEqual(0);
-      expect((ixs[0] as DecodedCollectProtocolFeesV2Instruction).transfers.length).toEqual(2)
+      expect((ixs[0] as DecodedCollectProtocolFeesV2Instruction).transfers.length).toEqual(2);
       expect((ixs[0] as DecodedCollectProtocolFeesV2Instruction).transfers[0].transferFeeConfig.basisPoints).toEqual(500);
       expect((ixs[0] as DecodedCollectProtocolFeesV2Instruction).transfers[0].transferFeeConfig.maximumFee).toEqual(18446744073709551615n);
       expect((ixs[0] as DecodedCollectProtocolFeesV2Instruction).transfers[1].transferFeeConfig.basisPoints).toEqual(1000);
@@ -158,7 +155,7 @@ describe("v2", () => {
       expect((ixs[0] as DecodedCollectRewardV2Instruction).data.rewardIndex).toEqual(2);
       expect((ixs[0] as DecodedCollectRewardV2Instruction).data.remainingAccountsInfo.length).toEqual(0);
       expect((ixs[0] as DecodedCollectRewardV2Instruction).remainingAccounts.length).toEqual(0);
-      expect((ixs[0] as DecodedCollectRewardV2Instruction).transfers.length).toEqual(1)
+      expect((ixs[0] as DecodedCollectRewardV2Instruction).transfers.length).toEqual(1);
       expect((ixs[0] as DecodedCollectRewardV2Instruction).transfers[0].transferFeeConfig.basisPoints).toEqual(5000);
       expect((ixs[0] as DecodedCollectRewardV2Instruction).transfers[0].transferFeeConfig.maximumFee).toEqual(18446744073709551615n);
       //console.log(JSON.stringify(ixs, null, 2));
@@ -177,9 +174,9 @@ describe("v2", () => {
       expect((ixs[0] as DecodedCollectRewardV2Instruction).data.remainingAccountsInfo[0].accountsType).toEqual(2); // TransferHookReward
       expect((ixs[0] as DecodedCollectRewardV2Instruction).data.remainingAccountsInfo[0].length).toEqual(3);
       expect((ixs[0] as DecodedCollectRewardV2Instruction).remainingAccounts.length).toEqual(3);
-      expect((ixs[0] as DecodedCollectRewardV2Instruction).transfers.length).toEqual(1)
-      expect((ixs[0] as DecodedCollectRewardV2Instruction).transfers[0].transferFeeConfig.basisPoints).toEqual(0);
-      expect((ixs[0] as DecodedCollectRewardV2Instruction).transfers[0].transferFeeConfig.maximumFee).toEqual(0n);
+      expect((ixs[0] as DecodedCollectRewardV2Instruction).transfers.length).toEqual(1);
+      // TransferFeeConfig extension is not initialized
+      expect((ixs[0] as DecodedCollectRewardV2Instruction).transfers[0].transferFeeConfig).toBeNull();
       //console.log(JSON.stringify(ixs, null, 2));
     });
   });
@@ -195,7 +192,7 @@ describe("v2", () => {
       expect(ixs[0].name).toEqual("increaseLiquidityV2");
       expect((ixs[0] as DecodedIncreaseLiquidityV2Instruction).data.remainingAccountsInfo.length).toEqual(0);
       expect((ixs[0] as DecodedIncreaseLiquidityV2Instruction).remainingAccounts.length).toEqual(0);
-      expect((ixs[0] as DecodedIncreaseLiquidityV2Instruction).transfers.length).toEqual(2)
+      expect((ixs[0] as DecodedIncreaseLiquidityV2Instruction).transfers.length).toEqual(2);
       expect((ixs[0] as DecodedIncreaseLiquidityV2Instruction).transfers[0].transferFeeConfig.basisPoints).toEqual(500);
       expect((ixs[0] as DecodedIncreaseLiquidityV2Instruction).transfers[0].transferFeeConfig.maximumFee).toEqual(18446744073709551615n);
       expect((ixs[0] as DecodedIncreaseLiquidityV2Instruction).transfers[1].transferFeeConfig.basisPoints).toEqual(1000);
@@ -217,11 +214,10 @@ describe("v2", () => {
       expect((ixs[0] as DecodedIncreaseLiquidityV2Instruction).data.remainingAccountsInfo[1].accountsType).toEqual(1); // TransferHookB
       expect((ixs[0] as DecodedIncreaseLiquidityV2Instruction).data.remainingAccountsInfo[1].length).toEqual(3);
       expect((ixs[0] as DecodedIncreaseLiquidityV2Instruction).remainingAccounts.length).toEqual(6);
-      expect((ixs[0] as DecodedIncreaseLiquidityV2Instruction).transfers.length).toEqual(2)
-      expect((ixs[0] as DecodedIncreaseLiquidityV2Instruction).transfers[0].transferFeeConfig.basisPoints).toEqual(0);
-      expect((ixs[0] as DecodedIncreaseLiquidityV2Instruction).transfers[0].transferFeeConfig.maximumFee).toEqual(0n);
-      expect((ixs[0] as DecodedIncreaseLiquidityV2Instruction).transfers[1].transferFeeConfig.basisPoints).toEqual(0);
-      expect((ixs[0] as DecodedIncreaseLiquidityV2Instruction).transfers[1].transferFeeConfig.maximumFee).toEqual(0n);
+      expect((ixs[0] as DecodedIncreaseLiquidityV2Instruction).transfers.length).toEqual(2);
+      // TransferFeeConfig extension is not initialized
+      expect((ixs[0] as DecodedIncreaseLiquidityV2Instruction).transfers[0].transferFeeConfig).toBeNull();
+      expect((ixs[0] as DecodedIncreaseLiquidityV2Instruction).transfers[1].transferFeeConfig).toBeNull();
       //console.log(JSON.stringify(ixs, null, 2));
     });
   });
@@ -237,7 +233,7 @@ describe("v2", () => {
       expect(ixs[0].name).toEqual("decreaseLiquidityV2");
       expect((ixs[0] as DecodedDecreaseLiquidityV2Instruction).data.remainingAccountsInfo.length).toEqual(0);
       expect((ixs[0] as DecodedDecreaseLiquidityV2Instruction).remainingAccounts.length).toEqual(0);
-      expect((ixs[0] as DecodedDecreaseLiquidityV2Instruction).transfers.length).toEqual(2)
+      expect((ixs[0] as DecodedDecreaseLiquidityV2Instruction).transfers.length).toEqual(2);
       expect((ixs[0] as DecodedDecreaseLiquidityV2Instruction).transfers[0].transferFeeConfig.basisPoints).toEqual(500);
       expect((ixs[0] as DecodedDecreaseLiquidityV2Instruction).transfers[0].transferFeeConfig.maximumFee).toEqual(18446744073709551615n);
       expect((ixs[0] as DecodedDecreaseLiquidityV2Instruction).transfers[1].transferFeeConfig.basisPoints).toEqual(1000);
@@ -257,7 +253,7 @@ describe("v2", () => {
       expect(ixs[0].name).toEqual("swapV2");
       expect((ixs[0] as DecodedSwapV2Instruction).data.remainingAccountsInfo.length).toEqual(0);
       expect((ixs[0] as DecodedSwapV2Instruction).remainingAccounts.length).toEqual(0);
-      expect((ixs[0] as DecodedSwapV2Instruction).transfers.length).toEqual(2)
+      expect((ixs[0] as DecodedSwapV2Instruction).transfers.length).toEqual(2);
       expect((ixs[0] as DecodedSwapV2Instruction).transfers[0].transferFeeConfig.basisPoints).toEqual(500);
       expect((ixs[0] as DecodedSwapV2Instruction).transfers[0].transferFeeConfig.maximumFee).toEqual(18446744073709551615n);
       expect((ixs[0] as DecodedSwapV2Instruction).transfers[1].transferFeeConfig.basisPoints).toEqual(1000);
@@ -279,11 +275,10 @@ describe("v2", () => {
       expect((ixs[0] as DecodedSwapV2Instruction).data.remainingAccountsInfo[1].accountsType).toEqual(1); // TransferHookB
       expect((ixs[0] as DecodedSwapV2Instruction).data.remainingAccountsInfo[1].length).toEqual(3);
       expect((ixs[0] as DecodedSwapV2Instruction).remainingAccounts.length).toEqual(6);
-      expect((ixs[0] as DecodedSwapV2Instruction).transfers.length).toEqual(2)
-      expect((ixs[0] as DecodedSwapV2Instruction).transfers[0].transferFeeConfig.basisPoints).toEqual(0);
-      expect((ixs[0] as DecodedSwapV2Instruction).transfers[0].transferFeeConfig.maximumFee).toEqual(0n);
-      expect((ixs[0] as DecodedSwapV2Instruction).transfers[1].transferFeeConfig.basisPoints).toEqual(0);
-      expect((ixs[0] as DecodedSwapV2Instruction).transfers[1].transferFeeConfig.maximumFee).toEqual(0n);
+      expect((ixs[0] as DecodedSwapV2Instruction).transfers.length).toEqual(2);
+      // TransferFeeConfig extension is not initialized
+      expect((ixs[0] as DecodedSwapV2Instruction).transfers[0].transferFeeConfig).toBeNull();
+      expect((ixs[0] as DecodedSwapV2Instruction).transfers[1].transferFeeConfig).toBeNull();
       //console.log(JSON.stringify(ixs, null, 2));
     });
   });
@@ -325,13 +320,11 @@ describe("v2", () => {
       expect((ixs[0] as DecodedTwoHopSwapV2Instruction).data.remainingAccountsInfo[2].accountsType).toEqual(5); // TransferHookOutput
       expect((ixs[0] as DecodedTwoHopSwapV2Instruction).data.remainingAccountsInfo[2].length).toEqual(3);
       expect((ixs[0] as DecodedTwoHopSwapV2Instruction).remainingAccounts.length).toEqual(9);
-      expect((ixs[0] as DecodedTwoHopSwapV2Instruction).transfers.length).toEqual(3)
-      expect((ixs[0] as DecodedTwoHopSwapV2Instruction).transfers[0].transferFeeConfig.basisPoints).toEqual(0);
-      expect((ixs[0] as DecodedTwoHopSwapV2Instruction).transfers[0].transferFeeConfig.maximumFee).toEqual(0n);
-      expect((ixs[0] as DecodedTwoHopSwapV2Instruction).transfers[1].transferFeeConfig.basisPoints).toEqual(0);
-      expect((ixs[0] as DecodedTwoHopSwapV2Instruction).transfers[1].transferFeeConfig.maximumFee).toEqual(0n);
-      expect((ixs[0] as DecodedTwoHopSwapV2Instruction).transfers[2].transferFeeConfig.basisPoints).toEqual(0);
-      expect((ixs[0] as DecodedTwoHopSwapV2Instruction).transfers[2].transferFeeConfig.maximumFee).toEqual(0n);
+      expect((ixs[0] as DecodedTwoHopSwapV2Instruction).transfers.length).toEqual(3);
+      // TransferFeeConfig extension is not initialized
+      expect((ixs[0] as DecodedTwoHopSwapV2Instruction).transfers[0].transferFeeConfig).toBeNull();
+      expect((ixs[0] as DecodedTwoHopSwapV2Instruction).transfers[1].transferFeeConfig).toBeNull();
+      expect((ixs[0] as DecodedTwoHopSwapV2Instruction).transfers[1].transferFeeConfig).toBeNull();
       //console.log(JSON.stringify(ixs, null, 2));
     });
   });
