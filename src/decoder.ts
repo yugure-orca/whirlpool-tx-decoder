@@ -59,7 +59,6 @@ import {
   TransferAmountWithTransferFeeConfig,
   RemainingAccountsInfo,
   RemainingAccountsType,
-  TransferFeeConfig,
 } from "./types";
 
 // IDL
@@ -79,8 +78,6 @@ const IDL_IX_TAG = [0x40, 0xf4, 0xbc, 0x78, 0xa7, 0xe9, 0x69, 0x0a];
 const TRANSFER_FEE_CONFIG_MEMO_REGEX = /^TFe: (\d+), (\d+)$/;
 const TRANSFER_FEE_CONFIG_MEMO_PREFIX = "TFe: ";
 const MEMO_TRANSFER_MEMO_PREFIX = "Orca ";
-
-const ZERO_TRANSFER_FEE_CONFIG: TransferFeeConfig = { basisPoints: 0, maximumFee: 0n };
 
 export class WhirlpoolTransactionDecoder {
   private static coder = new BorshCoder<string, string>(whirlpoolIDL as Idl);
@@ -370,7 +367,7 @@ export class WhirlpoolTransactionDecoder {
     }
 
     const transfers: TransferAmountWithTransferFeeConfig[] = [];
-    let transferFeeConfig = ZERO_TRANSFER_FEE_CONFIG;
+    let transferFeeConfig = null;
     for (let i = 0; i < directCpiInstructions.length; i++) {
       const ix = directCpiInstructions[i];
       switch (ix.programId) {
@@ -392,7 +389,7 @@ export class WhirlpoolTransactionDecoder {
         case TOKEN_2022_PROGRAM_ID_STRING:
           const amount = this.decodeTransferCheckedInstruction(ix);
           transfers.push({ amount, transferFeeConfig });
-          transferFeeConfig = ZERO_TRANSFER_FEE_CONFIG;
+          transferFeeConfig = null;
           break;
         default:
           invariant(false, "Invalid program id");

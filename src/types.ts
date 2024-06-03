@@ -8,7 +8,8 @@ export type TransferFeeConfig = {
 };
 export type TransferAmountWithTransferFeeConfig = {
   amount: TransferAmount;
-  transferFeeConfig: TransferFeeConfig;
+  // null if TransferFeeConfig exteension is not initialized
+  transferFeeConfig: TransferFeeConfig | null;
 };
 
 // RemainingAccounts
