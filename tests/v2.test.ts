@@ -1,5 +1,5 @@
 import { WhirlpoolTransactionDecoder } from "../src/decoder";
-import { DecodedCollectFeesV2Instruction, DecodedCollectProtocolFeesV2Instruction, DecodedCollectRewardV2Instruction, DecodedDecreaseLiquidityV2Instruction, DecodedIncreaseLiquidityV2Instruction, DecodedSwapV2Instruction, DecodedTwoHopSwapV2Instruction, TransactionJSON } from "../src/types";
+import { DecodedCollectFeesV2Instruction, DecodedCollectProtocolFeesV2Instruction, DecodedCollectRewardV2Instruction, DecodedDecreaseLiquidityV2Instruction, DecodedIncreaseLiquidityV2Instruction, DecodedInitializePoolV2Instruction, DecodedInitializeRewardV2Instruction, DecodedSwapV2Instruction, DecodedTwoHopSwapV2Instruction, TransactionJSON } from "../src/types";
 
 jest.setTimeout(100 * 1000 /* ms */);
 
@@ -338,6 +338,8 @@ describe("v2", () => {
       const ixs = WhirlpoolTransactionDecoder.decode(json, WHIRLPOOL_PROGRAM_ID);
       expect(ixs.length).toEqual(1);
       expect(ixs[0].name).toEqual("initializePoolV2");
+      expect((ixs[0] as DecodedInitializePoolV2Instruction).decimals.tokenMintA).toEqual(0);
+      expect((ixs[0] as DecodedInitializePoolV2Instruction).decimals.tokenMintB).toEqual(0);
       //console.log(JSON.stringify(ixs, null, 2));
     });
   });
@@ -351,6 +353,7 @@ describe("v2", () => {
       const ixs = WhirlpoolTransactionDecoder.decode(json, WHIRLPOOL_PROGRAM_ID);
       expect(ixs.length).toEqual(1);
       expect(ixs[0].name).toEqual("initializeRewardV2");
+      expect((ixs[0] as DecodedInitializeRewardV2Instruction).decimals.rewardMint).toEqual(0);
       //console.log(JSON.stringify(ixs, null, 2));
     });
   });

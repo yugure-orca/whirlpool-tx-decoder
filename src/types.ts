@@ -42,6 +42,17 @@ export type InnerInstructionJSON = {
   instructions: InstructionJSON[];
 };
 
+export type TokenBalanceJSON = {
+  accountIndex: number;
+  mint: string;
+  owner: string;
+  programId: string;
+  uiTokenAmount: {
+    amount: string;
+    decimals: number;
+  };
+};
+
 export type TransactionJSON = {
   result: {
     meta: {
@@ -51,6 +62,7 @@ export type TransactionJSON = {
         writable: string[];
         readonly: string[];
       };
+      postTokenBalances: TokenBalanceJSON[];
     };
     transaction: {
       message: {
@@ -61,6 +73,8 @@ export type TransactionJSON = {
     };
   };
 };
+
+export type DecimalsMap = Record<PubkeyString, number>;
 
 export type Instruction = {
   stackHeight: number | null;
@@ -403,6 +417,10 @@ export type DecodedInitializePoolInstruction = {
     systemProgram: PubkeyString;
     rent: PubkeyString;
   };
+  decimals: {
+    tokenMintA: number;
+    tokenMintB: number;
+  };
 };
 
 export type DecodedInitializePositionBundleInstruction = {
@@ -454,6 +472,9 @@ export type DecodedInitializeRewardInstruction = {
     tokenProgram: PubkeyString;
     systemProgram: PubkeyString;
     rent: PubkeyString;
+  };
+  decimals: {
+    rewardMint: number;
   };
 };
 
@@ -779,6 +800,10 @@ export type DecodedInitializePoolV2Instruction = {
     systemProgram: PubkeyString;
     rent: PubkeyString;
   };
+  decimals: {
+    tokenMintA: number;
+    tokenMintB: number;
+  };
 };
 
 export type DecodedInitializeRewardV2Instruction = {
@@ -796,6 +821,9 @@ export type DecodedInitializeRewardV2Instruction = {
     rewardTokenProgram: PubkeyString;
     systemProgram: PubkeyString;
     rent: PubkeyString;
+  };
+  decimals: {
+    rewardMint: number;
   };
 };
 
