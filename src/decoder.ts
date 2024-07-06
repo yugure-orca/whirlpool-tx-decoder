@@ -59,6 +59,7 @@ import {
   TransferAmountWithTransferFeeConfig,
   RemainingAccountsInfo,
   RemainingAccountsType,
+  DecimalsMap,
 } from "./types";
 
 // IDL
@@ -131,7 +132,7 @@ export class WhirlpoolTransactionDecoder {
           decodedInstructions.push(this.decodeInitializeFeeTierInstruction(decoded, ix.accounts));
           break;
         case "initializePool":
-          decodedInstructions.push(this.decodeInitializePoolInstruction(decoded, ix.accounts));
+          decodedInstructions.push(this.decodeInitializePoolInstruction(decoded, ix.accounts, this.pickDecimals(transaction)));
           break;
         case "initializePositionBundle":
           decodedInstructions.push(this.decodeInitializePositionBundleInstruction(decoded, ix.accounts));
@@ -140,7 +141,7 @@ export class WhirlpoolTransactionDecoder {
           decodedInstructions.push(this.decodeInitializePositionBundleWithMetadataInstruction(decoded, ix.accounts));
           break;
         case "initializeReward":
-          decodedInstructions.push(this.decodeInitializeRewardInstruction(decoded, ix.accounts));
+          decodedInstructions.push(this.decodeInitializeRewardInstruction(decoded, ix.accounts, this.pickDecimals(transaction)));
           break;
         case "initializeTickArray":
           decodedInstructions.push(this.decodeInitializeTickArrayInstruction(decoded, ix.accounts));
@@ -215,10 +216,10 @@ export class WhirlpoolTransactionDecoder {
           decodedInstructions.push(this.decodeIncreaseLiquidityV2Instruction(decoded, ix.accounts, this.decodeV2TransferInstructions(2, instructions.slice(i+1))));
           break;
         case "initializePoolV2":
-          decodedInstructions.push(this.decodeInitializePoolV2Instruction(decoded, ix.accounts));
+          decodedInstructions.push(this.decodeInitializePoolV2Instruction(decoded, ix.accounts, this.pickDecimals(transaction)));
           break;
         case "initializeRewardV2":
-          decodedInstructions.push(this.decodeInitializeRewardV2Instruction(decoded, ix.accounts));
+          decodedInstructions.push(this.decodeInitializeRewardV2Instruction(decoded, ix.accounts, this.pickDecimals(transaction)));
           break;
         case "setRewardEmissionsV2":
           decodedInstructions.push(this.decodeSetRewardEmissionsV2Instruction(decoded, ix.accounts));
@@ -295,6 +296,22 @@ export class WhirlpoolTransactionDecoder {
     }
 
     return decodedInstructions;
+  }
+
+  private static pickDecimals(transaction: TransactionJSON): DecimalsMap {
+    const meta = transaction.result.meta;
+
+    invariant(meta.postTokenBalances !== undefined, "Post token balances is undefined");
+    const decimalsMap = meta.postTokenBalances.reduce((map, balance) => {
+      const mint = balance.mint;
+      const decimals = balance.uiTokenAmount?.decimals;
+      invariant(mint !== undefined, "Mint is undefined");
+      invariant(decimals !== undefined, "Decimals is undefined");
+      map[mint] = decimals;
+      return map;
+    }, {});
+
+    return decimalsMap;
   }
 
   private static decodeTransferInstructions(ixs: Instruction[]): TransferAmount[] {
@@ -722,9 +739,15 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeInitializePoolInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedInitializePoolInstruction {
+  private static decodeInitializePoolInstruction(ix: AnchorInstruction, accounts: PubkeyString[], decimals: DecimalsMap): DecodedInitializePoolInstruction {
     invariant(ix.name === "initializePool", "Invalid instruction name");
     invariant(accounts.length >= 11, "Invalid accounts");
+
+    const decimalsTokenMintA = decimals[accounts[1]];
+    invariant(decimalsTokenMintA !== undefined, "tokenMintA decimals is undefined");
+    const decimalsTokenMintB = decimals[accounts[2]];
+    invariant(decimalsTokenMintB !== undefined, "tokenMintB decimals is undefined");
+    
     return {
       name: "initializePool",
       data: {
@@ -743,6 +766,10 @@ export class WhirlpoolTransactionDecoder {
         tokenProgram: accounts[8],
         systemProgram: accounts[9],
         rent: accounts[10],
+      },
+      decimals: {
+        tokenMintA: decimalsTokenMintA,
+        tokenMintB: decimalsTokenMintB,
       },
     };
   }
@@ -790,9 +817,13 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeInitializeRewardInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedInitializeRewardInstruction {
+  private static decodeInitializeRewardInstruction(ix: AnchorInstruction, accounts: PubkeyString[], decimals: DecimalsMap): DecodedInitializeRewardInstruction {
     invariant(ix.name === "initializeReward", "Invalid instruction name");
     invariant(accounts.length >= 8, "Invalid accounts");
+
+    const decimalsRewardMint = decimals[accounts[3]];
+    invariant(decimalsRewardMint !== undefined, "rewardMint decimals is undefined");
+
     return {
       name: "initializeReward",
       data: {
@@ -807,6 +838,9 @@ export class WhirlpoolTransactionDecoder {
         tokenProgram: accounts[5],
         systemProgram: accounts[6],
         rent: accounts[7],
+      },
+      decimals: {
+        rewardMint: decimalsRewardMint,
       },
     };
   }
@@ -1187,9 +1221,15 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeInitializePoolV2Instruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedInitializePoolV2Instruction {
+  private static decodeInitializePoolV2Instruction(ix: AnchorInstruction, accounts: PubkeyString[], decimals: DecimalsMap): DecodedInitializePoolV2Instruction {
     invariant(ix.name === "initializePoolV2", "Invalid instruction name");
     invariant(accounts.length >= 14, "Invalid accounts");
+
+    const decimalsTokenMintA = decimals[accounts[1]];
+    invariant(decimalsTokenMintA !== undefined, "tokenMintA decimals is undefined");
+    const decimalsTokenMintB = decimals[accounts[2]];
+    invariant(decimalsTokenMintB !== undefined, "tokenMintB decimals is undefined");
+
     return {
       name: "initializePoolV2",
       data: {
@@ -1212,12 +1252,20 @@ export class WhirlpoolTransactionDecoder {
         systemProgram: accounts[12],
         rent: accounts[13],
       },
+      decimals: {
+        tokenMintA: decimalsTokenMintA,
+        tokenMintB: decimalsTokenMintB,
+      },
     };
   }
 
-  private static decodeInitializeRewardV2Instruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedInitializeRewardV2Instruction {
+  private static decodeInitializeRewardV2Instruction(ix: AnchorInstruction, accounts: PubkeyString[], decimals: DecimalsMap): DecodedInitializeRewardV2Instruction {
     invariant(ix.name === "initializeRewardV2", "Invalid instruction name");
     invariant(accounts.length >= 9, "Invalid accounts");
+
+    const decimalsRewardMint = decimals[accounts[3]];
+    invariant(decimalsRewardMint !== undefined, "rewardMint decimals is undefined");
+
     return {
       name: "initializeRewardV2",
       data: {
@@ -1233,6 +1281,9 @@ export class WhirlpoolTransactionDecoder {
         rewardTokenProgram: accounts[6],
         systemProgram: accounts[7],
         rent: accounts[8],
+      },
+      decimals: {
+        rewardMint: decimalsRewardMint,
       },
     };
   }
