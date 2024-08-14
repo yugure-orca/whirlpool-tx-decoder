@@ -359,6 +359,9 @@ export class WhirlpoolTransactionDecoder {
         case "transferHookInput": return { accountsType: RemainingAccountsType.TransferHookInput, length };
         case "transferHookIntermediate": return { accountsType: RemainingAccountsType.TransferHookIntermediate, length };
         case "transferHookOutput": return { accountsType: RemainingAccountsType.TransferHookOutput, length };
+        case "supplementalTickArrays": return { accountsType: RemainingAccountsType.SupplementalTickArrays, length };
+        case "supplementalTickArraysOne": return { accountsType: RemainingAccountsType.SupplementalTickArraysOne, length };
+        case "supplementalTickArraysTwo": return { accountsType: RemainingAccountsType.SupplementalTickArraysTwo, length };
         default:
           invariant(false, `Unknown account type: ${keys[0]}`);
       }

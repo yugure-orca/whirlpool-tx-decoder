@@ -8,10 +8,10 @@ jest.setTimeout(100 * 1000 /* ms */);
 
 const WHIRLPOOL_PROGRAM_ID = "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc";
 
-describe("v2", () => {
+describe("v2 TokenExtensions", () => {
 
   function getTransactionJSON(blockJSONFile: string, signature: string): TransactionJSON {
-    const json = require(`./data/${blockJSONFile}`);
+    const json = require(`./data/tokenExtensions/${blockJSONFile}`);
     return { result: json.result.transactions.filter((tx: any) => tx.transaction.signatures[0] === signature)[0] };
   }
 
