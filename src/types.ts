@@ -20,6 +20,9 @@ export enum RemainingAccountsType {
   TransferHookInput,
   TransferHookIntermediate,
   TransferHookOutput,
+  SupplementalTickArrays,
+  SupplementalTickArraysOne,
+  SupplementalTickArraysTwo,
 }
 export type RemainingAccountsSlice = {
   accountsType: RemainingAccountsType;
