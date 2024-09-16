@@ -68,6 +68,7 @@ import whirlpoolIDL from "./whirlpool.idl.json";
 const TOKEN_PROGRAM_ID_STRING = TOKEN_PROGRAM_ID.toBase58();
 const TOKEN_2022_PROGRAM_ID_STRING = TOKEN_2022_PROGRAM_ID.toBase58();
 const MEMO_PROGRAM_ID_STRING = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr";
+const BPF_UPGRADABLE_LOADER_ID_STRING = "BPFLoaderUpgradeab1e11111111111111111111111";
 
 // IDL IX: https://github.com/coral-xyz/anchor/blob/master/lang/src/idl.rs
 // - https://solscan.io/tx/5wM76xyEEPi87AAW8Lo6B5wLs45Q3bBW81mWTMK9Jou5KRSUpx7Duyqm4zXDY9SUXTbvWFCtUfE5SeQPzRdiA1vH
@@ -85,11 +86,27 @@ export class WhirlpoolTransactionDecoder {
   private static textDecoder = new TextDecoder();
 
   public static decode(transaction: TransactionJSON, whirlpoolProgramId: PubkeyString): DecodedWhirlpoolInstruction[] {
+    return this.decodeWithProgramDeployDetection(transaction, whirlpoolProgramId).decodedInstructions;
+  }
+
+  public static decodeWithProgramDeployDetection(transaction: TransactionJSON, whirlpoolProgramId: PubkeyString): {
+    decodedInstructions: DecodedWhirlpoolInstruction[];
+    programDeployDetected: boolean;
+  } {
     const instructions = this.pickInstructions(transaction);
 
+    let programDeployDetected = false;
     const decodedInstructions: DecodedWhirlpoolInstruction[] = [];
     for (let i=0; i< instructions.length; i++) {
       const ix = instructions[i];
+
+      // program deploy instruction (DeployWithMaxDataLen or Upgrade)
+      if (this.isProgramDeployInstruction(ix, whirlpoolProgramId)) {
+        invariant(!programDeployDetected, "Multiple program deployment detected");
+        programDeployDetected = true;
+        continue;
+      }
+
       if (ix.programId !== whirlpoolProgramId) continue;
 
       // ignore IDL instructions
@@ -256,13 +273,41 @@ export class WhirlpoolTransactionDecoder {
       }
     }
 
-    return decodedInstructions;
+    return {
+      decodedInstructions,
+      programDeployDetected,
+    };
   }
 
   private static isIDLInstruction(dataBase58: string): boolean {
     const dataU8array: Uint8Array = bs58.decode(dataBase58);
     if (dataU8array.length < IDL_IX_TAG.length) return false;
     return IDL_IX_TAG.every((v, i) => v === dataU8array[i]);
+  }
+
+  private static isProgramDeployInstruction(ix: Instruction, whirlpoolProgramId: PubkeyString): boolean {
+    if (ix.programId !== BPF_UPGRADABLE_LOADER_ID_STRING) return false;
+
+    // BPF Upgradable Loader instructions
+    // https://github.com/solana-labs/solana/blob/27eff8408b7223bb3c4ab70523f8a8dca3ca6645/sdk/program/src/loader_upgradeable_instruction.rs#L7
+
+    const dataU8array = bs58.decode(ix.dataBase58);
+    const dataBuffer = Buffer.from(dataU8array);
+    invariant(dataBuffer.length >= 4, "Invalid data length");
+    const instructionCode = dataBuffer.readUint32LE(0);
+    
+    switch (instructionCode) {
+      case 2:
+        // DeployWithMaxDataLen
+        // 3rd account is the program id
+        return ix.accounts[2] === whirlpoolProgramId;
+      case 3:
+        // Upgrade
+        // 2nd account is the program id
+        return ix.accounts[1] === whirlpoolProgramId;
+      default:
+        return false;
+    }
   }
 
   private static pickInstructions(transaction: TransactionJSON): Instruction[] {
