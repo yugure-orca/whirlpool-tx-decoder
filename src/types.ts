@@ -133,6 +133,8 @@ export type DecodedWhirlpoolInstruction =
   DecodedDeleteTokenBadgeInstruction |
   DecodedSetConfigExtensionAuthorityInstruction |
   DecodedSetTokenBadgeAuthorityInstruction |
+  DecodedOpenPositionWithTokenExtensionsInstruction |
+  DecodedClosePositionWithTokenExtensionsInstruction |
   DecodedAdminIncreaseLiquidityInstruction;
 
 export type DecodedSwapInstruction = {
@@ -974,5 +976,39 @@ export type DecodedSetTokenBadgeAuthorityInstruction = {
     whirlpoolsConfigExtension: PubkeyString;
     configExtensionAuthority: PubkeyString;
     newTokenBadgeAuthority: PubkeyString;
+  };
+};
+
+export type DecodedOpenPositionWithTokenExtensionsInstruction = {
+  name: "openPositionWithTokenExtensions";
+  data: {
+    tickLowerIndex: number;
+    tickUpperIndex: number;
+    withTokenMetadataExtension: boolean;
+  };
+  accounts: {
+    funder: PubkeyString;
+    owner: PubkeyString;
+    position: PubkeyString;
+    positionMint: PubkeyString;
+    positionTokenAccount: PubkeyString;
+    whirlpool: PubkeyString;
+    token2022Program: PubkeyString;
+    systemProgram: PubkeyString;
+    associatedTokenProgram: PubkeyString;
+    metadataUpdateAuth: PubkeyString;
+  };
+};
+
+export type DecodedClosePositionWithTokenExtensionsInstruction = {
+  name: "closePositionWithTokenExtensions";
+  data: {};
+  accounts: {
+    positionAuthority: PubkeyString;
+    receiver: PubkeyString;
+    position: PubkeyString;
+    positionMint: PubkeyString;
+    positionTokenAccount: PubkeyString;
+    token2022Program: PubkeyString;
   };
 };

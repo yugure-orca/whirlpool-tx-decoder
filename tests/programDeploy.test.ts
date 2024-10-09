@@ -1,5 +1,5 @@
 import { WhirlpoolTransactionDecoder } from "../src/decoder";
-import { DecodedSwapV2Instruction, DecodedTwoHopSwapV2Instruction, TransactionJSON } from "../src/types";
+import { TransactionJSON } from "../src/types";
 
 jest.setTimeout(100 * 1000 /* ms */);
 

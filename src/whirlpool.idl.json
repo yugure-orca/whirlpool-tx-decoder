@@ -1,5 +1,5 @@
 {
-  "version": "0.3.0",
+  "version": "0.3.2",
   "name": "whirlpool",
   "instructions": [
     {
@@ -1845,6 +1845,136 @@
       ]
     },
     {
+      "name": "openPositionWithTokenExtensions",
+      "docs": [
+        "Open a position in a Whirlpool. A unique token will be minted to represent the position",
+        "in the users wallet. Additional TokenMetadata extension is initialized to identify the token.",
+        "Mint and TokenAccount are based on Token-2022.",
+        "The position will start off with 0 liquidity.",
+        "",
+        "### Parameters",
+        "- `tick_lower_index` - The tick specifying the lower end of the position range.",
+        "- `tick_upper_index` - The tick specifying the upper end of the position range.",
+        "- `with_token_metadata_extension` - If true, the token metadata extension will be initialized.",
+        "",
+        "#### Special Errors",
+        "- `InvalidTickIndex` - If a provided tick is out of bounds, out of order or not a multiple of",
+        "the tick-spacing in this pool."
+      ],
+      "accounts": [
+        {
+          "name": "funder",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "position",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "positionMint",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "positionTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "whirlpool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "token2022Program",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "metadataUpdateAuth",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "tickLowerIndex",
+          "type": "i32"
+        },
+        {
+          "name": "tickUpperIndex",
+          "type": "i32"
+        },
+        {
+          "name": "withTokenMetadataExtension",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "closePositionWithTokenExtensions",
+      "docs": [
+        "Close a position in a Whirlpool. Burns the position token in the owner's wallet.",
+        "Mint and TokenAccount are based on Token-2022. And Mint accout will be also closed.",
+        "",
+        "### Authority",
+        "- \"position_authority\" - The authority that owns the position token.",
+        "",
+        "#### Special Errors",
+        "- `ClosePositionNotEmpty` - The provided position account is not empty."
+      ],
+      "accounts": [
+        {
+          "name": "positionAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "receiver",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "position",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "positionMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "positionTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "token2022Program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "adminIncreaseLiquidity",
       "accounts": [
         {
@@ -3501,51 +3631,6 @@
       }
     },
     {
-      "name": "CurrIndex",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Below"
-          },
-          {
-            "name": "Inside"
-          },
-          {
-            "name": "Above"
-          }
-        ]
-      }
-    },
-    {
-      "name": "TickLabel",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Upper"
-          },
-          {
-            "name": "Lower"
-          }
-        ]
-      }
-    },
-    {
-      "name": "Direction",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Left"
-          },
-          {
-            "name": "Right"
-          }
-        ]
-      }
-    },
-    {
       "name": "AccountsType",
       "type": {
         "kind": "enum",
@@ -3854,13 +3939,23 @@
     },
     {
       "code": 6054,
+      "name": "FullRangeOnlyPool",
+      "msg": "This whirlpool only supports full-range positions"
+    },
+    {
+      "code": 6055,
       "name": "TooManySupplementalTickArrays",
       "msg": "Too many supplemental tick arrays provided"
     },
     {
-      "code": 6055,
+      "code": 6056,
       "name": "DifferentWhirlpoolTickArrayAccount",
       "msg": "TickArray account for different whirlpool provided"
+    },
+    {
+      "code": 6057,
+      "name": "PartialFillError",
+      "msg": "Trade resulted in partial fill"
     }
   ],
   "metadata": {

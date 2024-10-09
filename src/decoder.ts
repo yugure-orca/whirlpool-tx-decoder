@@ -56,6 +56,8 @@ import {
   DecodedDeleteTokenBadgeInstruction,
   DecodedSetConfigExtensionAuthorityInstruction,
   DecodedSetTokenBadgeAuthorityInstruction,
+  DecodedOpenPositionWithTokenExtensionsInstruction,
+  DecodedClosePositionWithTokenExtensionsInstruction,
   TransferAmountWithTransferFeeConfig,
   RemainingAccountsInfo,
   RemainingAccountsType,
@@ -262,6 +264,13 @@ export class WhirlpoolTransactionDecoder {
           break;
         case "setTokenBadgeAuthority":
           decodedInstructions.push(this.decodeSetTokenBadgeAuthorityInstruction(decoded, ix.accounts));
+          break;
+        // TokenExtensions based Position NFT
+        case "openPositionWithTokenExtensions":
+          decodedInstructions.push(this.decodeOpenPositionWithTokenExtensionsInstruction(decoded, ix.accounts));
+          break;
+        case "closePositionWithTokenExtensions":
+          decodedInstructions.push(this.decodeClosePositionWithTokenExtensionsInstruction(decoded, ix.accounts));
           break;
         // It no longer exists today. (used to fix a bug)
         case "adminIncreaseLiquidity":
@@ -1511,6 +1520,48 @@ export class WhirlpoolTransactionDecoder {
         whirlpoolsConfigExtension: accounts[1],
         configExtensionAuthority: accounts[2],
         newTokenBadgeAuthority: accounts[3],
+      },
+    };
+  }
+
+  private static decodeOpenPositionWithTokenExtensionsInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedOpenPositionWithTokenExtensionsInstruction {
+    invariant(ix.name === "openPositionWithTokenExtensions", "Invalid instruction name");
+    invariant(accounts.length >= 10, "Invalid accounts");
+    return {
+      name: "openPositionWithTokenExtensions",
+      data: {
+        tickLowerIndex: ix.data["tickLowerIndex"],
+        tickUpperIndex: ix.data["tickUpperIndex"],
+        withTokenMetadataExtension: ix.data["withTokenMetadataExtension"],
+      },
+      accounts: {
+        funder: accounts[0],
+        owner: accounts[1],
+        position: accounts[2],
+        positionMint: accounts[3],
+        positionTokenAccount: accounts[4],
+        whirlpool: accounts[5],
+        token2022Program: accounts[6],
+        systemProgram: accounts[7],
+        associatedTokenProgram: accounts[8],
+        metadataUpdateAuth: accounts[9],
+      },
+    };
+  }
+
+  private static decodeClosePositionWithTokenExtensionsInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedClosePositionWithTokenExtensionsInstruction {
+    invariant(ix.name === "closePositionWithTokenExtensions", "Invalid instruction name");
+    invariant(accounts.length >= 6, "Invalid accounts");
+    return {
+      name: "closePositionWithTokenExtensions",
+      data: {},
+      accounts: {
+        positionAuthority: accounts[0],
+        receiver: accounts[1],
+        position: accounts[2],
+        positionMint: accounts[3],
+        positionTokenAccount: accounts[4],
+        token2022Program: accounts[5],
       },
     };
   }
