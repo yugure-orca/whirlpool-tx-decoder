@@ -1978,9 +1978,19 @@
       "name": "adminIncreaseLiquidity",
       "accounts": [
         {
+          "name": "whirlpoolsConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "whirlpool",
           "isMut": true,
           "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
         }
       ],
       "args": [
