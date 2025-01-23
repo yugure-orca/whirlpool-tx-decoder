@@ -31,6 +31,11 @@ export type RemainingAccountsSlice = {
 export type RemainingAccountsInfo = RemainingAccountsSlice[];
 export type RemainingAccounts = PubkeyString[];
 
+export type LockType = LockTypePermanent;
+export type LockTypePermanent = {
+  name: "permanent";
+};
+
 export type InstructionJSON = {
   // null if block is too old (including inner instructions)
   // null if instruction is top level
@@ -135,6 +140,7 @@ export type DecodedWhirlpoolInstruction =
   DecodedSetTokenBadgeAuthorityInstruction |
   DecodedOpenPositionWithTokenExtensionsInstruction |
   DecodedClosePositionWithTokenExtensionsInstruction |
+  DecodedLockPositionInstruction |
   DecodedAdminIncreaseLiquidityInstruction;
 
 export type DecodedSwapInstruction = {
@@ -1010,5 +1016,23 @@ export type DecodedClosePositionWithTokenExtensionsInstruction = {
     positionMint: PubkeyString;
     positionTokenAccount: PubkeyString;
     token2022Program: PubkeyString;
+  };
+};
+
+export type DecodedLockPositionInstruction = {
+  name: "lockPosition";
+  data: {
+    lockType: LockType;
+  };
+  accounts: {
+    funder: PubkeyString;
+    positionAuthority: PubkeyString;
+    position: PubkeyString;
+    positionMint: PubkeyString;
+    positionTokenAccount: PubkeyString;
+    lockConfig: PubkeyString;
+    whirlpool: PubkeyString;
+    token2022Program: PubkeyString;
+    systemProgram: PubkeyString;
   };
 };

@@ -58,10 +58,12 @@ import {
   DecodedSetTokenBadgeAuthorityInstruction,
   DecodedOpenPositionWithTokenExtensionsInstruction,
   DecodedClosePositionWithTokenExtensionsInstruction,
+  DecodedLockPositionInstruction,
   TransferAmountWithTransferFeeConfig,
   RemainingAccountsInfo,
   RemainingAccountsType,
   DecimalsMap,
+  LockType,
 } from "./types";
 
 // IDL
@@ -272,6 +274,9 @@ export class WhirlpoolTransactionDecoder {
         case "closePositionWithTokenExtensions":
           decodedInstructions.push(this.decodeClosePositionWithTokenExtensionsInstruction(decoded, ix.accounts));
           break;
+        case "lockPosition":
+          decodedInstructions.push(this.decodeLockPositionInstruction(decoded, ix.accounts));
+          break;
         // It no longer exists today. (used to fix a bug)
         case "adminIncreaseLiquidity":
           decodedInstructions.push(this.decodeAdminIncreaseLiquidityInstruction(decoded, ix.accounts));
@@ -377,9 +382,7 @@ export class WhirlpoolTransactionDecoder {
     invariant(ix.accounts.length >= 3, "Invalid number of accounts");
 
     const dataU8array = bs58.decode(ix.dataBase58);
-    const dataBuffer = Buffer.from(dataU8array);
-
-    const decoded = transferInstructionData.decode(dataBuffer);
+    const decoded = transferInstructionData.decode(dataU8array);
 
     return decoded.amount;
   }
@@ -389,14 +392,12 @@ export class WhirlpoolTransactionDecoder {
     invariant(ix.accounts.length >= 4, "Invalid number of accounts");
 
     const dataU8array = bs58.decode(ix.dataBase58);
-    const dataBuffer = Buffer.from(dataU8array);
-
-    const decoded = transferCheckedInstructionData.decode(dataBuffer);
+    const decoded = transferCheckedInstructionData.decode(dataU8array);
 
     return decoded.amount;
   }
 
-  private static decodeRemainingAccountsInfo(remainingAccountsInfo: { slices: { accountsType: { [k: string]: string }, length: number }[] } | null): RemainingAccountsInfo {
+  private static decodeRemainingAccountsInfo(remainingAccountsInfo: { slices: { accountsType: { [k: string]: object }, length: number }[] } | null): RemainingAccountsInfo {
     if (remainingAccountsInfo === null) return [];
 
     const result = remainingAccountsInfo.slices.map((r) => {
@@ -421,6 +422,16 @@ export class WhirlpoolTransactionDecoder {
       }
     });
     return result;
+  }
+
+  private static decodeLockType(lockType: { [k: string]: object }): LockType {
+    const keys = Object.keys(lockType);
+    invariant(keys.length === 1, "Invalid lock type");
+    switch (keys[0]) {
+      case "permanent": return { name: "permanent" };
+      default:
+        invariant(false, `Unknown lock type: ${keys[0]}`);
+    }
   }
 
   private static decodeV2TransferInstructions(expectedTransfers: number, followingInstructions: Instruction[]): TransferAmountWithTransferFeeConfig[] {
@@ -1562,6 +1573,28 @@ export class WhirlpoolTransactionDecoder {
         positionMint: accounts[3],
         positionTokenAccount: accounts[4],
         token2022Program: accounts[5],
+      },
+    };
+  }
+
+  private static decodeLockPositionInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedLockPositionInstruction {
+    invariant(ix.name === "lockPosition", "Invalid instruction name");
+    invariant(accounts.length >= 9, "Invalid accounts");
+    return {
+      name: "lockPosition",
+      data: {
+        lockType: this.decodeLockType(ix.data["lockType"]),
+      },
+      accounts: {
+        funder: accounts[0],
+        positionAuthority: accounts[1],
+        position: accounts[2],
+        positionMint: accounts[3],
+        positionTokenAccount: accounts[4],
+        lockConfig: accounts[5],
+        whirlpool: accounts[6],
+        token2022Program: accounts[7],
+        systemProgram: accounts[8],
       },
     };
   }
