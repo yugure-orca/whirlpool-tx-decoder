@@ -474,7 +474,7 @@
           "isMut": true,
           "isSigner": false,
           "docs": [
-            "https://github.com/metaplex-foundation/metaplex-program-library/blob/master/token-metadata/program/src/utils.rs#L873"
+            "https://github.com/metaplex-foundation/mpl-token-metadata/blob/master/programs/token-metadata/program/src/utils/metadata.rs#L78"
           ]
         },
         {
@@ -1975,6 +1975,74 @@
       "args": []
     },
     {
+      "name": "lockPosition",
+      "docs": [
+        "Lock the position to prevent any liquidity changes.",
+        "",
+        "### Authority",
+        "- `position_authority` - The authority that owns the position token.",
+        "",
+        "#### Special Errors",
+        "- `PositionAlreadyLocked` - The provided position is already locked.",
+        "- `PositionNotLockable` - The provided position is not lockable (e.g. An empty position)."
+      ],
+      "accounts": [
+        {
+          "name": "funder",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "positionAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "position",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "positionMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "positionTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lockConfig",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "whirlpool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "token2022Program",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "lockType",
+          "type": {
+            "defined": "LockType"
+          }
+        }
+      ]
+    },
+    {
       "name": "adminIncreaseLiquidity",
       "accounts": [
         {
@@ -3242,6 +3310,36 @@
       }
     },
     {
+      "name": "LockConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "position",
+            "type": "publicKey"
+          },
+          {
+            "name": "positionOwner",
+            "type": "publicKey"
+          },
+          {
+            "name": "whirlpool",
+            "type": "publicKey"
+          },
+          {
+            "name": "lockedTimestamp",
+            "type": "u64"
+          },
+          {
+            "name": "lockType",
+            "type": {
+              "defined": "LockTypeLabel"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "PositionBundle",
       "type": {
         "kind": "struct",
@@ -3463,6 +3561,28 @@
     }
   ],
   "types": [
+    {
+      "name": "LockType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Permanent"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LockTypeLabel",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Permanent"
+          }
+        ]
+      }
+    },
     {
       "name": "OpenPositionBumps",
       "type": {
@@ -3966,6 +4086,16 @@
       "code": 6057,
       "name": "PartialFillError",
       "msg": "Trade resulted in partial fill"
+    },
+    {
+      "code": 6058,
+      "name": "PositionNotLockable",
+      "msg": "Position is not lockable"
+    },
+    {
+      "code": 6059,
+      "name": "OperationNotAllowedOnLockedPosition",
+      "msg": "Operation not allowed on locked position"
     }
   ],
   "metadata": {
