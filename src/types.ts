@@ -141,6 +141,8 @@ export type DecodedWhirlpoolInstruction =
   DecodedOpenPositionWithTokenExtensionsInstruction |
   DecodedClosePositionWithTokenExtensionsInstruction |
   DecodedLockPositionInstruction |
+  DecodedResetPositionRangeInstruction |
+  DecodedTransferLockedPositionInstruction |
   DecodedAdminIncreaseLiquidityInstruction;
 
 export type DecodedSwapInstruction = {
@@ -1034,5 +1036,36 @@ export type DecodedLockPositionInstruction = {
     whirlpool: PubkeyString;
     token2022Program: PubkeyString;
     systemProgram: PubkeyString;
+  };
+};
+
+export type DecodedResetPositionRangeInstruction = {
+  name: "resetPositionRange";
+  data: {
+    newTickLowerIndex: number;
+    newTickUpperIndex: number;
+  };
+  accounts: {
+    funder: PubkeyString;
+    positionAuthority: PubkeyString;
+    whirlpool: PubkeyString;
+    position: PubkeyString;
+    positionTokenAccount: PubkeyString;
+    systemProgram: PubkeyString;
+  };
+};
+
+export type DecodedTransferLockedPositionInstruction = {
+  name: "transferLockedPosition";
+  data: {};
+  accounts: {
+    positionAuthority: PubkeyString;
+    receiver: PubkeyString;
+    position: PubkeyString;
+    positionMint: PubkeyString;
+    positionTokenAccount: PubkeyString;
+    destinationTokenAccount: PubkeyString;
+    lockConfig: PubkeyString;
+    token2022Program: PubkeyString;
   };
 };

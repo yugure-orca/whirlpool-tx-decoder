@@ -1,5 +1,5 @@
 import { WhirlpoolTransactionDecoder } from "../src/decoder";
-import { DecodedLockPositionInstruction, TransactionJSON } from "../src/types";
+import { DecodedLockPositionInstruction, DecodedTransferLockedPositionInstruction, TransactionJSON } from "../src/types";
 
 jest.setTimeout(100 * 1000 /* ms */);
 
@@ -8,10 +8,10 @@ jest.setTimeout(100 * 1000 /* ms */);
 
 const WHIRLPOOL_PROGRAM_ID = "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc";
 
-describe("Lock Position", () => {
+describe("Liquidity Locking", () => {
 
   function getTransactionJSON(blockJSONFile: string, signature: string): TransactionJSON {
-    const json = require(`./data/lockPosition/${blockJSONFile}`);
+    const json = require(`./data/liquidityLocking/${blockJSONFile}`);
     return { result: json.result.transactions.filter((tx: any) => tx.transaction.signatures[0] === signature)[0] };
   }
 
@@ -39,6 +39,27 @@ describe("Lock Position", () => {
 
     const lockTypeJsonString = JSON.stringify(ixs0.data.lockType);
     expect(lockTypeJsonString).toEqual('{"name":"permanent"}');
+  });
+
+  it("transferLockedPosition", async () => {
+    const blockJSONFile = "transferLockedPosition.json"
+    const signature = "2uTxKXS3ftekg4wMw3ctngDEvNc9aNwzUR9LdZkyCoagVBi4mnDYcsescEXSvoPxydi2aGZkE1pjhdn7sVxJJFcE";
+    const json = getTransactionJSON(blockJSONFile, signature);
+
+    const ixs = WhirlpoolTransactionDecoder.decode(json, WHIRLPOOL_PROGRAM_ID);
+    expect(ixs.length).toEqual(1);
+    expect(ixs[0].name).toEqual("transferLockedPosition");
+
+    const ixs0 = ixs[0] as DecodedTransferLockedPositionInstruction;
+
+    expect(ixs0.accounts.positionAuthority).toEqual("3otH3AHWqkqgSVfKFkrxyDqd2vK6LcaqigHrFEmWcGuo");
+    expect(ixs0.accounts.receiver).toEqual("74REJJfNQnKFEyYYqUZyR9tpr1dEkCEBXfd554aENLog");
+    expect(ixs0.accounts.position).toEqual("9YThyZvyLg6gVyo3fdtbw4HKrvUAwBcwH9GARfMipW6s");
+    expect(ixs0.accounts.positionMint).toEqual("CZ7VqqLn3wz9BPxLisPQwYZ8LKfGmRKx2TmTcNfUCcfy");
+    expect(ixs0.accounts.positionTokenAccount).toEqual("5Tkv5VLGmV3PpkuQYLkb5on84xQ4iTuUsaJ3wtXy65TA");
+    expect(ixs0.accounts.destinationTokenAccount).toEqual("EyZaaZyjaRe4EJhMciWPEwu9vNzMxFJsyB5Q8dgRN5mB");
+    expect(ixs0.accounts.lockConfig).toEqual("8uGJVQikw9C8SbgkfUQBKdskfSKz2P556eE4Vu7BhpkW");
+    expect(ixs0.accounts.token2022Program).toEqual("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
   });
 
 });

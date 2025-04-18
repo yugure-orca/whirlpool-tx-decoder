@@ -1,5 +1,5 @@
 {
-  "version": "0.3.2",
+  "version": "0.3.5",
   "name": "whirlpool",
   "instructions": [
     {
@@ -2069,6 +2069,119 @@
       ]
     },
     {
+      "name": "resetPositionRange",
+      "docs": [
+        "Reset the position range to a new range.",
+        "",
+        "### Authority",
+        "- `position_authority` - The authority that owns the position token.",
+        "",
+        "### Parameters",
+        "- `new_tick_lower_index` - The new tick specifying the lower end of the position range.",
+        "- `new_tick_upper_index` - The new tick specifying the upper end of the position range.",
+        "",
+        "#### Special Errors",
+        "- `InvalidTickIndex` - If a provided tick is out of bounds, out of order or not a multiple of",
+        "the tick-spacing in this pool.",
+        "- `ClosePositionNotEmpty` - The provided position account is not empty.",
+        "- `SameTickRangeNotAllowed` - The provided tick range is the same as the current tick range."
+      ],
+      "accounts": [
+        {
+          "name": "funder",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "positionAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "whirlpool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "position",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "positionTokenAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "newTickLowerIndex",
+          "type": "i32"
+        },
+        {
+          "name": "newTickUpperIndex",
+          "type": "i32"
+        }
+      ]
+    },
+    {
+      "name": "transferLockedPosition",
+      "docs": [
+        "Transfer a locked position to to a different token account.",
+        "",
+        "### Authority",
+        "- `position_authority` - The authority that owns the position token."
+      ],
+      "accounts": [
+        {
+          "name": "positionAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "receiver",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "position",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "positionMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "positionTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "destinationTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lockConfig",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "token2022Program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "collectFeesV2",
       "docs": [
         "Collect fees accrued for this position.",
@@ -3796,6 +3909,218 @@
       }
     }
   ],
+  "events": [
+    {
+      "name": "LiquidityDecreased",
+      "fields": [
+        {
+          "name": "whirlpool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "position",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tickLowerIndex",
+          "type": "i32",
+          "index": false
+        },
+        {
+          "name": "tickUpperIndex",
+          "type": "i32",
+          "index": false
+        },
+        {
+          "name": "liquidity",
+          "type": "u128",
+          "index": false
+        },
+        {
+          "name": "tokenAAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tokenBAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tokenATransferFee",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tokenBTransferFee",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "LiquidityIncreased",
+      "fields": [
+        {
+          "name": "whirlpool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "position",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tickLowerIndex",
+          "type": "i32",
+          "index": false
+        },
+        {
+          "name": "tickUpperIndex",
+          "type": "i32",
+          "index": false
+        },
+        {
+          "name": "liquidity",
+          "type": "u128",
+          "index": false
+        },
+        {
+          "name": "tokenAAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tokenBAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tokenATransferFee",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tokenBTransferFee",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "PoolInitialized",
+      "fields": [
+        {
+          "name": "whirlpool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "whirlpoolsConfig",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenMintA",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenMintB",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tickSpacing",
+          "type": "u16",
+          "index": false
+        },
+        {
+          "name": "tokenProgramA",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenProgramB",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "decimalsA",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "decimalsB",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "initialSqrtPrice",
+          "type": "u128",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "Traded",
+      "fields": [
+        {
+          "name": "whirlpool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "aToB",
+          "type": "bool",
+          "index": false
+        },
+        {
+          "name": "preSqrtPrice",
+          "type": "u128",
+          "index": false
+        },
+        {
+          "name": "postSqrtPrice",
+          "type": "u128",
+          "index": false
+        },
+        {
+          "name": "inputAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "outputAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "inputTransferFee",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "outputTransferFee",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "lpFee",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "protocolFee",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    }
+  ],
   "errors": [
     {
       "code": 6000,
@@ -4096,6 +4421,11 @@
       "code": 6059,
       "name": "OperationNotAllowedOnLockedPosition",
       "msg": "Operation not allowed on locked position"
+    },
+    {
+      "code": 6060,
+      "name": "SameTickRangeNotAllowed",
+      "msg": "Cannot reset position range with same tick range"
     }
   ],
   "metadata": {
