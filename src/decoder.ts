@@ -64,6 +64,8 @@ import {
   RemainingAccountsType,
   DecimalsMap,
   LockType,
+  DecodedResetPositionRangeInstruction,
+  DecodedTransferLockedPositionInstruction,
 } from "./types";
 
 // IDL
@@ -276,6 +278,12 @@ export class WhirlpoolTransactionDecoder {
           break;
         case "lockPosition":
           decodedInstructions.push(this.decodeLockPositionInstruction(decoded, ix.accounts));
+          break;
+        case "resetPositionRange":
+          decodedInstructions.push(this.decodeResetPositionRangeInstruction(decoded, ix.accounts));
+          break;
+        case "transferLockedPosition":
+          decodedInstructions.push(this.decodeTransferLockedPositionInstruction(decoded, ix.accounts));
           break;
         // It no longer exists today. (used to fix a bug)
         case "adminIncreaseLiquidity":
@@ -1595,6 +1603,45 @@ export class WhirlpoolTransactionDecoder {
         whirlpool: accounts[6],
         token2022Program: accounts[7],
         systemProgram: accounts[8],
+      },
+    };
+  }
+
+  private static decodeResetPositionRangeInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedResetPositionRangeInstruction {
+    invariant(ix.name === "resetPositionRange", "Invalid instruction name");
+    invariant(accounts.length >= 6, "Invalid accounts");
+    return {
+      name: "resetPositionRange",
+      data: {
+        newTickLowerIndex: ix.data["newTickLowerIndex"],
+        newTickUpperIndex: ix.data["newTickUpperIndex"],
+      },
+      accounts: {
+        funder: accounts[0],
+        positionAuthority: accounts[1],
+        whirlpool: accounts[2],
+        position: accounts[3],
+        positionTokenAccount: accounts[4],
+        systemProgram: accounts[5],
+      },
+    };
+  }
+
+  private static decodeTransferLockedPositionInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedTransferLockedPositionInstruction {
+    invariant(ix.name === "transferLockedPosition", "Invalid instruction name");
+    invariant(accounts.length >= 8, "Invalid accounts");
+    return {
+      name: "transferLockedPosition",
+      data: {},
+      accounts: {
+        positionAuthority: accounts[0],
+        receiver: accounts[1],
+        position: accounts[2],
+        positionMint: accounts[3],
+        positionTokenAccount: accounts[4],
+        destinationTokenAccount: accounts[5],
+        lockConfig: accounts[6],
+        token2022Program: accounts[7],
       },
     };
   }
