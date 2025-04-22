@@ -36,6 +36,9 @@ describe("Liquidity Locking", () => {
     expect(ixs0.accounts.whirlpool).toEqual("AjXKJft9La1KyMRqmMDDv5oSQ9Kv4CyBGLW3dZeC8xKw");
     expect(ixs0.accounts.token2022Program).toEqual("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
     expect(ixs0.accounts.systemProgram).toEqual("11111111111111111111111111111111");
+  
+    // authority = owner
+    expect(ixs0.auxiliaries.positionTokenAccountOwner).toEqual("r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6");
 
     const lockTypeJsonString = JSON.stringify(ixs0.data.lockType);
     expect(lockTypeJsonString).toEqual('{"name":"permanent"}');
@@ -60,6 +63,9 @@ describe("Liquidity Locking", () => {
     expect(ixs0.accounts.destinationTokenAccount).toEqual("EyZaaZyjaRe4EJhMciWPEwu9vNzMxFJsyB5Q8dgRN5mB");
     expect(ixs0.accounts.lockConfig).toEqual("8uGJVQikw9C8SbgkfUQBKdskfSKz2P556eE4Vu7BhpkW");
     expect(ixs0.accounts.token2022Program).toEqual("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
+
+    // owner should be extracted from postTokenAccountBalances
+    expect(ixs0.auxiliaries.destinationTokenAccountOwner).toEqual("FyXx6PTKanqVJw1NauDX3uhnXgAo32FEk94f7yQLQ4rL");
   });
 
 });

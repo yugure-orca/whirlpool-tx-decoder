@@ -66,6 +66,7 @@ import {
   LockType,
   DecodedResetPositionRangeInstruction,
   DecodedTransferLockedPositionInstruction,
+  TokenAccountOwnerMap,
 } from "./types";
 
 // IDL
@@ -86,6 +87,8 @@ const IDL_IX_TAG = [0x40, 0xf4, 0xbc, 0x78, 0xa7, 0xe9, 0x69, 0x0a];
 const TRANSFER_FEE_CONFIG_MEMO_REGEX = /^TFe: (\d+), (\d+)$/;
 const TRANSFER_FEE_CONFIG_MEMO_PREFIX = "TFe: ";
 const MEMO_TRANSFER_MEMO_PREFIX = "Orca ";
+
+const PUBKEY_STRING_PLACEHOLDER = "<PubkeyString>";
 
 export class WhirlpoolTransactionDecoder {
   private static coder = new BorshCoder<string, string>(whirlpoolIDL as Idl);
@@ -295,6 +298,8 @@ export class WhirlpoolTransactionDecoder {
       }
     }
 
+    this.resolveAuxiliaries(decodedInstructions, transaction);
+
     return {
       decodedInstructions,
       programDeployDetected,
@@ -379,6 +384,100 @@ export class WhirlpoolTransactionDecoder {
     }, {});
 
     return decimalsMap;
+  }
+
+  private static pickPostTokenAccountOwner(transaction: TransactionJSON): TokenAccountOwnerMap {
+    const meta = transaction.result.meta;
+    const message = transaction.result.transaction.message;
+    const accounts = message.accountKeys.slice(); // shallow copy
+
+    // loaded from ALT, order is accountKeys, writable, readonly
+    meta.loadedAddresses?.writable.forEach((k) => accounts.push(k));
+    meta.loadedAddresses?.readonly.forEach((k) => accounts.push(k));
+
+    invariant(meta.postTokenBalances !== undefined, "Post token balances is undefined");
+    const postTokenAccountOwnerMap = meta.postTokenBalances.reduce((map, balance) => {
+      const account = accounts[balance.accountIndex];
+      const owner = balance.owner;
+      invariant(account !== undefined, "Account is undefined");
+      invariant(owner !== undefined, "Owner is undefined");
+      map[account] = owner;
+      return map;
+    }, {});
+
+    return postTokenAccountOwnerMap;
+  }
+
+  private static resolveAuxiliaries(decodedInstructions: DecodedWhirlpoolInstruction[], transaction: TransactionJSON) {
+    // Currently, the target is only lockPosition and transferLockedPosition
+
+    const lockRelateeedInstructionsGroupByPosition = new Map<string, (DecodedLockPositionInstruction | DecodedTransferLockedPositionInstruction)[]>();
+    for (const ix of decodedInstructions) {
+      if (ix.name !== "lockPosition" && ix.name !== "transferLockedPosition") continue;
+
+      const position = ix.accounts.position;
+      if (!lockRelateeedInstructionsGroupByPosition.has(position)) {
+        lockRelateeedInstructionsGroupByPosition.set(position, []);
+      }
+      lockRelateeedInstructionsGroupByPosition.get(position)!.push(ix);
+    }
+    if (lockRelateeedInstructionsGroupByPosition.size === 0) return;
+
+    const postTokenAccountOwnerMap = this.pickPostTokenAccountOwner(transaction);
+
+    // available instruction flow for a specific position in a single transaction
+    // note: at the moment, Whirlpool does not support unlocking, so lockPosition never comes after transferLockedPosition.
+    // note: transferLockedPosition can be executed by the owner (delegation is not allowed),
+    //       so position authority of transferLockedPosition is always the owner of the position token account.
+    // note: Because token account is frozen, post token account balance of the last position token account should be always 1.
+    //
+    // - lockPosition
+    // - transferLockedPosition
+    // - lockPosition, transferLockedPosition x N
+    // - transferLockedPosition x N
+    //
+    for (const instructions of lockRelateeedInstructionsGroupByPosition.values()) {
+      for (let i = 0; i < instructions.length; i++) {
+        const ix = instructions[i];
+        const nextInstruction = i + 1 < instructions.length ? instructions[i + 1] : null;
+
+        if (ix.name === "lockPosition") {
+          // lockPosition
+          invariant(ix.auxiliaries.positionTokenAccountOwner === PUBKEY_STRING_PLACEHOLDER);
+
+          if (!nextInstruction) {
+            const positionTokenAccountOwner = postTokenAccountOwnerMap[ix.accounts.positionTokenAccount];
+            invariant(positionTokenAccountOwner !== undefined, "positionTokenAccount is not found in postTokenAccountOwnerMap");
+            ix.auxiliaries.positionTokenAccountOwner = positionTokenAccountOwner;
+          } else {
+            // next instruction must be transferLockedPosition
+            invariant(nextInstruction.name === "transferLockedPosition", "Invalid next instruction");
+            invariant(nextInstruction.accounts.positionTokenAccount === ix.accounts.positionTokenAccount, "Invalid token account");
+            ix.auxiliaries.positionTokenAccountOwner = nextInstruction.accounts.positionAuthority;
+          }
+
+          invariant(ix.auxiliaries.positionTokenAccountOwner !== PUBKEY_STRING_PLACEHOLDER, "positionTokenAccountOwner is not resolved");
+        } else if (ix.name === "transferLockedPosition") {
+          // transferLockedPosition
+          invariant(ix.auxiliaries.destinationTokenAccountOwner === PUBKEY_STRING_PLACEHOLDER);
+
+          if (!nextInstruction) {
+            const destinationTokenAccountOwner = postTokenAccountOwnerMap[ix.accounts.destinationTokenAccount];
+            invariant(destinationTokenAccountOwner !== undefined, "destinationTokenAccount is not found in postTokenAccountOwnerMap");
+            ix.auxiliaries.destinationTokenAccountOwner = destinationTokenAccountOwner;
+          } else {
+            // next instruction must be transferLockedPosition
+            invariant(nextInstruction.name === "transferLockedPosition", "Invalid next instruction");
+            invariant(nextInstruction.accounts.positionTokenAccount === ix.accounts.destinationTokenAccount, "Invalid token account");
+            ix.auxiliaries.destinationTokenAccountOwner = nextInstruction.accounts.positionAuthority;
+          }
+
+          invariant(ix.auxiliaries.destinationTokenAccountOwner !== PUBKEY_STRING_PLACEHOLDER, "destinationTokenAccountOwner is not resolved");
+        } else {
+          invariant(false, "unreachable");
+        }
+      }
+    }
   }
 
   private static decodeTransferInstructions(ixs: Instruction[]): TransferAmount[] {
@@ -1604,6 +1703,9 @@ export class WhirlpoolTransactionDecoder {
         token2022Program: accounts[7],
         systemProgram: accounts[8],
       },
+      auxiliaries: {
+        positionTokenAccountOwner: PUBKEY_STRING_PLACEHOLDER, // will be resolved later
+      },
     };
   }
 
@@ -1642,6 +1744,9 @@ export class WhirlpoolTransactionDecoder {
         destinationTokenAccount: accounts[5],
         lockConfig: accounts[6],
         token2022Program: accounts[7],
+      },
+      auxiliaries: {
+        destinationTokenAccountOwner: PUBKEY_STRING_PLACEHOLDER, // will be resolved later
       },
     };
   }
