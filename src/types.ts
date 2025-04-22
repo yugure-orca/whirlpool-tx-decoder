@@ -84,6 +84,8 @@ export type TransactionJSON = {
 
 export type DecimalsMap = Record<PubkeyString, number>;
 
+export type TokenAccountOwnerMap = Record<PubkeyString, PubkeyString>;
+
 export type Instruction = {
   stackHeight: number | null;
   programId: PubkeyString;
@@ -1037,6 +1039,9 @@ export type DecodedLockPositionInstruction = {
     token2022Program: PubkeyString;
     systemProgram: PubkeyString;
   };
+  auxiliaries: {
+    positionTokenAccountOwner: PubkeyString;
+  };
 };
 
 export type DecodedResetPositionRangeInstruction = {
@@ -1067,5 +1072,8 @@ export type DecodedTransferLockedPositionInstruction = {
     destinationTokenAccount: PubkeyString;
     lockConfig: PubkeyString;
     token2022Program: PubkeyString;
+  };
+  auxiliaries: {
+    destinationTokenAccountOwner: PubkeyString;
   };
 };
