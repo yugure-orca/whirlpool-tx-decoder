@@ -145,6 +145,13 @@ export type DecodedWhirlpoolInstruction =
   DecodedLockPositionInstruction |
   DecodedResetPositionRangeInstruction |
   DecodedTransferLockedPositionInstruction |
+  DecodedInitializeAdaptiveFeeTierInstruction |
+  DecodedInitializePoolWithAdaptiveFeeInstruction |
+  DecodedSetDefaultBaseFeeRateInstruction |
+  DecodedSetDelegatedFeeAuthorityInstruction |
+  DecodedSetInitializePoolAuthorityInstruction |
+  DecodedSetPresetAdaptiveFeeConstantsInstruction |
+  DecodedSetFeeRateByDelegatedFeeAuthorityInstruction |
   DecodedAdminIncreaseLiquidityInstruction;
 
 export type DecodedSwapInstruction = {
@@ -1075,5 +1082,124 @@ export type DecodedTransferLockedPositionInstruction = {
   };
   auxiliaries: {
     destinationTokenAccountOwner: PubkeyString;
+  };
+};
+
+export type DecodedInitializeAdaptiveFeeTierInstruction = {
+  name: "initializeAdaptiveFeeTier";
+  data: {
+    feeTierIndex: number;
+    tickSpacing: number;
+    initializePoolAuthority: PubkeyString;
+    delegatedFeeAuthority: PubkeyString;
+    defaultBaseFeeRate: number;
+    filterPeriod: number;
+    decayPeriod: number;
+    reductionFactor: number;
+    adaptiveFeeControlFactor: number;
+    maxVolatilityAccumulator: number;
+    tickGroupSize: number;
+    majorSwapThresholdTicks: number;
+  };
+  accounts: {
+    whirlpoolsConfig: PubkeyString;
+    adaptiveFeeTier: PubkeyString;
+    funder: PubkeyString;
+    feeAuthority: PubkeyString;
+    systemProgram: PubkeyString;
+  };
+};
+
+export type DecodedInitializePoolWithAdaptiveFeeInstruction = {
+  name: "initializePoolWithAdaptiveFee";
+  data: {
+    initialSqrtPrice: BN;
+    tradeEnableTimestamp: BN;
+  };
+  accounts: {
+    whirlpoolsConfig: PubkeyString;
+    tokenMintA: PubkeyString;
+    tokenMintB: PubkeyString;
+    tokenBadgeA: PubkeyString;
+    tokenBadgeB: PubkeyString;
+    funder: PubkeyString;
+    initializePoolAuthority: PubkeyString;
+    whirlpool: PubkeyString;
+    oracle: PubkeyString;
+    tokenVaultA: PubkeyString;
+    tokenVaultB: PubkeyString;
+    adaptiveFeeTier: PubkeyString;
+    tokenProgramA: PubkeyString;
+    tokenProgramB: PubkeyString;
+    systemProgram: PubkeyString;
+    rent: PubkeyString;
+  };
+  decimals: {
+    tokenMintA: number;
+    tokenMintB: number;
+  };
+};
+
+export type DecodedSetDefaultBaseFeeRateInstruction = {
+  name: "setDefaultBaseFeeRate";
+  data: {
+    defaultBaseFeeRate: number;
+  };
+  accounts: {
+    whirlpoolsConfig: PubkeyString;
+    adaptiveFeeTier: PubkeyString;
+    feeAuthority: PubkeyString;
+  };
+};
+
+export type DecodedSetDelegatedFeeAuthorityInstruction = {
+  name: "setDelegatedFeeAuthority";
+  data: {};
+  accounts: {
+    whirlpoolsConfig: PubkeyString;
+    adaptiveFeeTier: PubkeyString;
+    feeAuthority: PubkeyString;
+    newDelegatedFeeAuthority: PubkeyString;
+  };
+};
+
+export type DecodedSetInitializePoolAuthorityInstruction = {
+  name: "setInitializePoolAuthority";
+  data: {};
+  accounts: {
+    whirlpoolsConfig: PubkeyString;
+    adaptiveFeeTier: PubkeyString;
+    feeAuthority: PubkeyString;
+    newInitializePoolAuthority: PubkeyString;
+  };
+};
+
+export type DecodedSetPresetAdaptiveFeeConstantsInstruction = {
+  name: "setPresetAdaptiveFeeConstants";
+  data: {
+    filterPeriod: number;
+    decayPeriod: number;
+    reductionFactor: number;
+    adaptiveFeeControlFactor: number;
+    maxVolatilityAccumulator: number;
+    tickGroupSize: number;
+    majorSwapThresholdTicks: number;
+  };
+  accounts: {
+    whirlpoolsConfig: PubkeyString;
+    adaptiveFeeTier: PubkeyString;
+    feeAuthority: PubkeyString;
+  };
+};
+
+export type DecodedSetFeeRateByDelegatedFeeAuthorityInstruction = {
+  name: "setFeeRateByDelegatedFeeAuthority";
+  data: {
+    feeRate: number;
+  };
+  accounts: {
+    whirlpool: PubkeyString;
+    adaptiveFeeTier: PubkeyString;
+    delegatedFeeAuthority: PubkeyString;
   };
 };

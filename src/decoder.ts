@@ -67,6 +67,13 @@ import {
   DecodedResetPositionRangeInstruction,
   DecodedTransferLockedPositionInstruction,
   TokenAccountOwnerMap,
+  DecodedInitializeAdaptiveFeeTierInstruction,
+  DecodedInitializePoolWithAdaptiveFeeInstruction,
+  DecodedSetDefaultBaseFeeRateInstruction,
+  DecodedSetDelegatedFeeAuthorityInstruction,
+  DecodedSetInitializePoolAuthorityInstruction,
+  DecodedSetFeeRateByDelegatedFeeAuthorityInstruction,
+  DecodedSetPresetAdaptiveFeeConstantsInstruction,
 } from "./types";
 
 // IDL
@@ -279,14 +286,38 @@ export class WhirlpoolTransactionDecoder {
         case "closePositionWithTokenExtensions":
           decodedInstructions.push(this.decodeClosePositionWithTokenExtensionsInstruction(decoded, ix.accounts));
           break;
+        // Liquidity Locking
         case "lockPosition":
           decodedInstructions.push(this.decodeLockPositionInstruction(decoded, ix.accounts));
           break;
+        case "transferLockedPosition":
+          decodedInstructions.push(this.decodeTransferLockedPositionInstruction(decoded, ix.accounts));
+          break;
+        // Reset Position Range
         case "resetPositionRange":
           decodedInstructions.push(this.decodeResetPositionRangeInstruction(decoded, ix.accounts));
           break;
-        case "transferLockedPosition":
-          decodedInstructions.push(this.decodeTransferLockedPositionInstruction(decoded, ix.accounts));
+        // Adaptive Fee
+        case "initializeAdaptiveFeeTier":
+          decodedInstructions.push(this.decodeInitializeAdaptiveFeeTierInstruction(decoded, ix.accounts));
+          break;
+        case "initializePoolWithAdaptiveFee":
+          decodedInstructions.push(this.decodeInitializePoolWithAdaptiveFeeInstruction(decoded, ix.accounts, this.pickDecimals(transaction)));
+          break;
+        case "setDefaultBaseFeeRate":
+          decodedInstructions.push(this.decodeSetDefaultBaseFeeRateInstruction(decoded, ix.accounts));
+          break;
+        case "setDelegatedFeeAuthority":
+          decodedInstructions.push(this.decodeSetDelegatedFeeAuthorityInstruction(decoded, ix.accounts));
+          break;
+        case "setInitializePoolAuthority":
+          decodedInstructions.push(this.decodeSetInitializePoolAuthorityInstruction(decoded, ix.accounts));
+          break;
+        case "setPresetAdaptiveFeeConstants":
+          decodedInstructions.push(this.decodeSetPresetAdaptiveFeeConstantsInstruction(decoded, ix.accounts));
+          break;
+        case "setFeeRateByDelegatedFeeAuthority":
+          decodedInstructions.push(this.decodeSetFeeRateByDelegatedFeeAuthorityInstruction(decoded, ix.accounts));
           break;
         // It no longer exists today. (used to fix a bug)
         case "adminIncreaseLiquidity":
@@ -1747,6 +1778,159 @@ export class WhirlpoolTransactionDecoder {
       },
       auxiliaries: {
         destinationTokenAccountOwner: PUBKEY_STRING_PLACEHOLDER, // will be resolved later
+      },
+    };
+  }
+
+  private static decodeInitializeAdaptiveFeeTierInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedInitializeAdaptiveFeeTierInstruction {
+    invariant(ix.name === "initializeAdaptiveFeeTier", "Invalid instruction name");
+    invariant(accounts.length >= 5, "Invalid accounts");
+    return {
+      name: "initializeAdaptiveFeeTier",
+      data: {
+        feeTierIndex: ix.data["feeTierIndex"],
+        tickSpacing: ix.data["tickSpacing"],
+        initializePoolAuthority: ix.data["initializePoolAuthority"].toString(),
+        delegatedFeeAuthority: ix.data["delegatedFeeAuthority"].toString(),
+        defaultBaseFeeRate: ix.data["defaultBaseFeeRate"],
+        filterPeriod: ix.data["filterPeriod"],
+        decayPeriod: ix.data["decayPeriod"],
+        reductionFactor: ix.data["reductionFactor"],
+        adaptiveFeeControlFactor: ix.data["adaptiveFeeControlFactor"],
+        maxVolatilityAccumulator: ix.data["maxVolatilityAccumulator"],
+        tickGroupSize: ix.data["tickGroupSize"],
+        majorSwapThresholdTicks: ix.data["majorSwapThresholdTicks"],
+      },
+      accounts: {
+        whirlpoolsConfig: accounts[0],
+        adaptiveFeeTier: accounts[1],
+        funder: accounts[2],
+        feeAuthority: accounts[3],
+        systemProgram: accounts[4],
+      },
+    };
+  }
+
+  private static decodeInitializePoolWithAdaptiveFeeInstruction(ix: AnchorInstruction, accounts: PubkeyString[], decimals: DecimalsMap): DecodedInitializePoolWithAdaptiveFeeInstruction {
+    invariant(ix.name === "initializePoolWithAdaptiveFee", "Invalid instruction name");
+    invariant(accounts.length >= 16, "Invalid accounts");
+
+    const decimalsTokenMintA = decimals[accounts[1]];
+    invariant(decimalsTokenMintA !== undefined, "tokenMintA decimals is undefined");
+    const decimalsTokenMintB = decimals[accounts[2]];
+    invariant(decimalsTokenMintB !== undefined, "tokenMintB decimals is undefined");
+
+    return {
+      name: "initializePoolWithAdaptiveFee",
+      data: {
+        initialSqrtPrice: ix.data["initialSqrtPrice"],
+        tradeEnableTimestamp: ix.data["tradeEnableTimestamp"],
+      },
+      accounts: {
+        whirlpoolsConfig: accounts[0],
+        tokenMintA: accounts[1],
+        tokenMintB: accounts[2],
+        tokenBadgeA: accounts[3],
+        tokenBadgeB: accounts[4],
+        funder: accounts[5],
+        initializePoolAuthority: accounts[6],
+        whirlpool: accounts[7],
+        oracle: accounts[8],
+        tokenVaultA: accounts[9],
+        tokenVaultB: accounts[10],
+        adaptiveFeeTier: accounts[11],
+        tokenProgramA: accounts[12],
+        tokenProgramB: accounts[13],
+        systemProgram: accounts[14],
+        rent: accounts[15],
+      },
+      decimals: {
+        tokenMintA: decimalsTokenMintA,
+        tokenMintB: decimalsTokenMintB,
+      },
+    };
+  }
+
+  private static decodeSetDefaultBaseFeeRateInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedSetDefaultBaseFeeRateInstruction {
+    invariant(ix.name === "setDefaultBaseFeeRate", "Invalid instruction name");
+    invariant(accounts.length >= 3, "Invalid accounts");
+    return {
+      name: "setDefaultBaseFeeRate",
+      data: {
+        defaultBaseFeeRate: ix.data["defaultBaseFeeRate"],
+      },
+      accounts: {
+        whirlpoolsConfig: accounts[0],
+        adaptiveFeeTier: accounts[1],
+        feeAuthority: accounts[2],
+      },
+    };
+  }
+
+  private static decodeSetDelegatedFeeAuthorityInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedSetDelegatedFeeAuthorityInstruction {
+    invariant(ix.name === "setDelegatedFeeAuthority", "Invalid instruction name");
+    invariant(accounts.length >= 4, "Invalid accounts");
+    return {
+      name: "setDelegatedFeeAuthority",
+      data: {},
+      accounts: {
+        whirlpoolsConfig: accounts[0],
+        adaptiveFeeTier: accounts[1],
+        feeAuthority: accounts[2],
+        newDelegatedFeeAuthority: accounts[3],
+      },
+    };
+  }
+
+  private static decodeSetInitializePoolAuthorityInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedSetInitializePoolAuthorityInstruction {
+    invariant(ix.name === "setInitializePoolAuthority", "Invalid instruction name");
+    invariant(accounts.length >= 4, "Invalid accounts");
+    return {
+      name: "setInitializePoolAuthority",
+      data: {},
+      accounts: {
+        whirlpoolsConfig: accounts[0],
+        adaptiveFeeTier: accounts[1],
+        feeAuthority: accounts[2],
+        newInitializePoolAuthority: accounts[3],
+      },
+    };
+  }
+
+  private static decodeSetPresetAdaptiveFeeConstantsInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedSetPresetAdaptiveFeeConstantsInstruction {
+    invariant(ix.name === "setPresetAdaptiveFeeConstants", "Invalid instruction name");
+    invariant(accounts.length >= 3, "Invalid accounts");
+    return {
+      name: "setPresetAdaptiveFeeConstants",
+      data: {
+        filterPeriod: ix.data["filterPeriod"],
+        decayPeriod: ix.data["decayPeriod"],
+        reductionFactor: ix.data["reductionFactor"],
+        adaptiveFeeControlFactor: ix.data["adaptiveFeeControlFactor"],
+        maxVolatilityAccumulator: ix.data["maxVolatilityAccumulator"],
+        tickGroupSize: ix.data["tickGroupSize"],
+        majorSwapThresholdTicks: ix.data["majorSwapThresholdTicks"],
+      },
+      accounts: {
+        whirlpoolsConfig: accounts[0],
+        adaptiveFeeTier: accounts[1],
+        feeAuthority: accounts[2],
+      },
+    };
+  }
+
+  private static decodeSetFeeRateByDelegatedFeeAuthorityInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedSetFeeRateByDelegatedFeeAuthorityInstruction {
+    invariant(ix.name === "setFeeRateByDelegatedFeeAuthority", "Invalid instruction name");
+    invariant(accounts.length >= 3, "Invalid accounts");
+    return {
+      name: "setFeeRateByDelegatedFeeAuthority",
+      data: {
+        feeRate: ix.data["feeRate"],
+      },
+      accounts: {
+        whirlpool: accounts[0],
+        adaptiveFeeTier: accounts[1],
+        delegatedFeeAuthority: accounts[2],
       },
     };
   }
