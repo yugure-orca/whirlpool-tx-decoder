@@ -1,4 +1,4 @@
-import { BorshCoder, Idl, Instruction as AnchorInstruction } from "@coral-xyz/anchor";
+import { BorshCoder, Idl, Instruction as AnchorInstruction, BN } from "@coral-xyz/anchor";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, transferInstructionData, transferCheckedInstructionData } from "@solana/spl-token";
 import invariant from "tiny-invariant"
 import bs58 from "bs58";
@@ -1824,7 +1824,7 @@ export class WhirlpoolTransactionDecoder {
       name: "initializePoolWithAdaptiveFee",
       data: {
         initialSqrtPrice: ix.data["initialSqrtPrice"],
-        tradeEnableTimestamp: ix.data["tradeEnableTimestamp"],
+        tradeEnableTimestamp: ix.data["tradeEnableTimestamp"] ?? new BN(0),
       },
       accounts: {
         whirlpoolsConfig: accounts[0],
