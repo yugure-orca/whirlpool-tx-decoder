@@ -74,6 +74,7 @@ import {
   DecodedSetInitializePoolAuthorityInstruction,
   DecodedSetFeeRateByDelegatedFeeAuthorityInstruction,
   DecodedSetPresetAdaptiveFeeConstantsInstruction,
+  DecodedInitializeDynamicTickArrayInstruction,
 } from "./types";
 
 // IDL
@@ -318,6 +319,10 @@ export class WhirlpoolTransactionDecoder {
           break;
         case "setFeeRateByDelegatedFeeAuthority":
           decodedInstructions.push(this.decodeSetFeeRateByDelegatedFeeAuthorityInstruction(decoded, ix.accounts));
+          break;
+        // Dynamic Tick Array
+        case "initializeDynamicTickArray":
+          decodedInstructions.push(this.decodeInitializeDynamicTickArrayInstruction(decoded, ix.accounts));
           break;
         // It no longer exists today. (used to fix a bug)
         case "adminIncreaseLiquidity":
@@ -1931,6 +1936,24 @@ export class WhirlpoolTransactionDecoder {
         whirlpool: accounts[0],
         adaptiveFeeTier: accounts[1],
         delegatedFeeAuthority: accounts[2],
+      },
+    };
+  }
+
+  private static decodeInitializeDynamicTickArrayInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedInitializeDynamicTickArrayInstruction {
+    invariant(ix.name === "initializeDynamicTickArray", "Invalid instruction name");
+    invariant(accounts.length >= 4, "Invalid accounts");
+    return {
+      name: "initializeDynamicTickArray",
+      data: {
+        startTickIndex: ix.data["startTickIndex"],
+        idempotent: ix.data["idempotent"],
+      },
+      accounts: {
+        whirlpool: accounts[0],
+        funder: accounts[1],
+        tickArray: accounts[2],
+        systemProgram: accounts[3],
       },
     };
   }
