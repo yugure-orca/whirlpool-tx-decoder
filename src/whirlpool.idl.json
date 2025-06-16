@@ -1,5 +1,5 @@
 {
-  "version": "0.4.0",
+  "version": "0.4.1",
   "name": "whirlpool",
   "instructions": [
     {
@@ -142,7 +142,7 @@
     {
       "name": "initializeTickArray",
       "docs": [
-        "Initializes a tick_array account to represent a tick-range in a Whirlpool.",
+        "Initializes a fixed-length tick_array account to represent a tick-range in a Whirlpool.",
         "",
         "### Parameters",
         "- `start_tick_index` - The starting tick index for this tick-array.",
@@ -178,6 +178,54 @@
         {
           "name": "startTickIndex",
           "type": "i32"
+        }
+      ]
+    },
+    {
+      "name": "initializeDynamicTickArray",
+      "docs": [
+        "Initialize a variable-length tick array for a Whirlpool.",
+        "",
+        "### Parameters",
+        "- `start_tick_index` - The starting tick index for this tick-array.",
+        "Has to be a multiple of TickArray size & the tick spacing of this pool.",
+        "- `idempotent` - If true, the instruction will not fail if the tick array already exists.",
+        "Note: The idempotent option exits successfully if a FixedTickArray is present as well as a DynamicTickArray.",
+        "",
+        "#### Special Errors",
+        "- `InvalidStartTick` - if the provided start tick is out of bounds or is not a multiple of",
+        "TICK_ARRAY_SIZE * tick spacing."
+      ],
+      "accounts": [
+        {
+          "name": "whirlpool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "funder",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "tickArray",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "startTickIndex",
+          "type": "i32"
+        },
+        {
+          "name": "idempotent",
+          "type": "bool"
         }
       ]
     },
@@ -3787,6 +3835,22 @@
         }
       ],
       "args": []
+    },
+    {
+      "name": "idlInclude",
+      "accounts": [
+        {
+          "name": "tickArray",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -3895,6 +3959,37 @@
       }
     },
     {
+      "name": "DynamicTickArray",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "startTickIndex",
+            "type": "i32"
+          },
+          {
+            "name": "whirlpool",
+            "type": "publicKey"
+          },
+          {
+            "name": "tickBitmap",
+            "type": "u128"
+          },
+          {
+            "name": "ticks",
+            "type": {
+              "array": [
+                {
+                  "defined": "DynamicTick"
+                },
+                88
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "FeeTier",
       "type": {
         "kind": "struct",
@@ -3944,7 +4039,7 @@
         ]
       }
     },
-    {
+        {
       "name": "PositionBundle",
       "type": {
         "kind": "struct",
@@ -4203,6 +4298,58 @@
     }
   ],
   "types": [
+    {
+      "name": "DynamicTick",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Uninitialized"
+          },
+          {
+            "name": "Initialized",
+            "fields": [
+              {
+                "defined": "DynamicTickData"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "DynamicTickData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "liquidityNet",
+            "type": "i128"
+          },
+          {
+            "name": "liquidityGross",
+            "type": "u128"
+          },
+          {
+            "name": "feeGrowthOutsideA",
+            "type": "u128"
+          },
+          {
+            "name": "feeGrowthOutsideB",
+            "type": "u128"
+          },
+          {
+            "name": "rewardGrowthsOutside",
+            "type": {
+              "array": [
+                "u128",
+                3
+              ]
+            }
+          }
+        ]
+      }
+    },
     {
       "name": "LockType",
       "type": {
@@ -5057,6 +5204,11 @@
       "code": 6064,
       "name": "TradeIsNotEnabled",
       "msg": "Trade is not enabled yet"
+    },
+    {
+      "code": 6065,
+      "name": "RentCalculationError",
+      "msg": "Rent calculation error"
     }
   ],
   "metadata": {

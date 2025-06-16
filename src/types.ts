@@ -152,6 +152,7 @@ export type DecodedWhirlpoolInstruction =
   DecodedSetInitializePoolAuthorityInstruction |
   DecodedSetPresetAdaptiveFeeConstantsInstruction |
   DecodedSetFeeRateByDelegatedFeeAuthorityInstruction |
+  DecodedInitializeDynamicTickArrayInstruction |
   DecodedAdminIncreaseLiquidityInstruction;
 
 export type DecodedSwapInstruction = {
@@ -1201,5 +1202,19 @@ export type DecodedSetFeeRateByDelegatedFeeAuthorityInstruction = {
     whirlpool: PubkeyString;
     adaptiveFeeTier: PubkeyString;
     delegatedFeeAuthority: PubkeyString;
+  };
+};
+
+export type DecodedInitializeDynamicTickArrayInstruction = {
+  name: "initializeDynamicTickArray";
+  data: {
+    startTickIndex: number;
+    idempotent: boolean;
+  };
+  accounts: {
+    whirlpool: PubkeyString;
+    funder: PubkeyString;
+    tickArray: PubkeyString;
+    systemProgram: PubkeyString;
   };
 };
