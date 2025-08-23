@@ -36,6 +36,20 @@ export type LockTypePermanent = {
   name: "permanent";
 };
 
+export type ConfigFeatureFlag = ConfigFeatureFlagTokenBadge;
+export type ConfigFeatureFlagTokenBadge = {
+  name: "tokenBadge";
+  // fields value
+  enabled: boolean;
+};
+
+export type TokenBadgeAttribute = TokenBadgeAttributeRequireNonTransferablePosition;
+export type TokenBadgeAttributeRequireNonTransferablePosition = {
+  name: "requireNonTransferablePosition";
+  // fields value
+  required: boolean;
+};
+
 export type InstructionJSON = {
   // null if block is too old (including inner instructions)
   // null if instruction is top level
@@ -153,7 +167,10 @@ export type DecodedWhirlpoolInstruction =
   DecodedSetPresetAdaptiveFeeConstantsInstruction |
   DecodedSetFeeRateByDelegatedFeeAuthorityInstruction |
   DecodedInitializeDynamicTickArrayInstruction |
-  DecodedAdminIncreaseLiquidityInstruction;
+  DecodedSetConfigFeatureFlagInstruction |
+  DecodedSetTokenBadgeAttributeInstruction |
+  DecodedAdminIncreaseLiquidityInstruction |
+  DecodedMigrateRepurposeRewardAuthoritySpaceInstruction;
 
 export type DecodedSwapInstruction = {
   name: "swap";
@@ -1216,5 +1233,38 @@ export type DecodedInitializeDynamicTickArrayInstruction = {
     funder: PubkeyString;
     tickArray: PubkeyString;
     systemProgram: PubkeyString;
+  };
+};
+
+export type DecodedSetConfigFeatureFlagInstruction = {
+  name: "setConfigFeatureFlag";
+  data: {
+    featureFlag: ConfigFeatureFlag;
+  };
+  accounts: {
+    whirlpoolsConfig: PubkeyString;
+    authority: PubkeyString;
+  };
+};
+
+export type DecodedSetTokenBadgeAttributeInstruction = {
+  name: "setTokenBadgeAttribute";
+  data: {
+    attribute: TokenBadgeAttribute;
+  };
+  accounts: {
+    whirlpoolsConfig: PubkeyString;
+    whirlpoolsConfigExtension: PubkeyString;
+    tokenBadgeAuthority: PubkeyString;
+    tokenMint: PubkeyString;
+    tokenBadge: PubkeyString;
+  };
+};
+
+export type DecodedMigrateRepurposeRewardAuthoritySpaceInstruction = {
+  name: "migrateRepurposeRewardAuthoritySpace";
+  data: {};
+  accounts: {
+    whirlpool: PubkeyString;
   };
 };
