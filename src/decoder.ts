@@ -587,6 +587,7 @@ export class WhirlpoolTransactionDecoder {
     const keys = Object.keys(lockType);
     invariant(keys.length === 1, "Invalid lock type");
     const key = keys[0];
+
     switch (key) {
       case "permanent":
         return { name: "permanent" };
@@ -599,13 +600,15 @@ export class WhirlpoolTransactionDecoder {
     const keys = Object.keys(featureFlag);
     invariant(keys.length === 1, "Invalid config feature flag");
     const key = keys[0];
+
     const variant = featureFlag[key];
+    invariant(!!variant && typeof variant === "object", "Invalid config feature flag object");
+
     switch (key) {
       case "tokenBadge":
-        invariant(Array.isArray(variant), "Invalid tokenBadge variant");
-        invariant(variant.length === 1, "Invalid tokenBadge variant length");
-        invariant(typeof variant[0] === "boolean", "Invalid tokenBadge variant[0] type");
-        return { name: "tokenBadge", enabled: variant[0] };
+        invariant("0" in variant, "Invalid tokenBadge variant");
+        invariant(typeof variant["0"] === "boolean", "Invalid tokenBadge variant[0] type");
+        return { name: "tokenBadge", enabled: variant["0"] };
       default:
         invariant(false, `Unknown feature flag: ${key}`);
     }
@@ -615,13 +618,15 @@ export class WhirlpoolTransactionDecoder {
     const keys = Object.keys(attribute);
     invariant(keys.length === 1, "Invalid token badge attribute");
     const key = keys[0];
+
     const variant = attribute[key];
+    invariant(!!variant && typeof variant === "object", "Invalid token badge attribute object");
+
     switch (key) {
       case "requireNonTransferablePosition":
-        invariant(Array.isArray(variant), "Invalid requireNonTransferablePosition variant");
-        invariant(variant.length === 1, "Invalid requireNonTransferablePosition variant length");
-        invariant(typeof variant[0] === "boolean", "Invalid requireNonTransferablePosition variant[0] type");
-        return { name: "requireNonTransferablePosition", required: variant[0] };
+        invariant("0" in variant, "Invalid requireNonTransferablePosition variant");
+        invariant(typeof variant["0"] === "boolean", "Invalid requireNonTransferablePosition variant[0] type");
+        return { name: "requireNonTransferablePosition", required: variant["0"] };
       default:
         invariant(false, `Unknown token badge attribute: ${key}`);
     }
@@ -2029,7 +2034,7 @@ export class WhirlpoolTransactionDecoder {
     return {
       name: "setTokenBadgeAttribute",
       data: {
-        attribute: this.decodeTokenBadgeAttribute(ix.data["tokenBadge"]),
+        attribute: this.decodeTokenBadgeAttribute(ix.data["attribute"]),
       },
       accounts: {
         whirlpoolsConfig: accounts[0],

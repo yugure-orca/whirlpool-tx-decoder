@@ -1,0 +1,82 @@
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "blockHeight": 124,
+    "blockTime": 1755925424,
+    "blockhash": "zP5obr946vQT2Yt29gtGMjsdrFyWxWEAsvMGbQurH45",
+    "parentSlot": 123,
+    "previousBlockhash": "AMDEpsUNteud7EE9WhFhR1geQpKdrmUkCsJiJ8fxikd5",
+    "transactions": [
+      {
+        "meta": {
+          "computeUnitsConsumed": 2752,
+          "err": null,
+          "fee": 10000,
+          "innerInstructions": [],
+          "loadedAddresses": {
+            "readonly": [],
+            "writable": []
+          },
+          "logMessages": [
+            "Program whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc invoke [1]",
+            "Program log: Instruction: SetConfigFeatureFlag",
+            "Program whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc consumed 2752 of 200000 compute units",
+            "Program whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc success"
+          ],
+          "postBalances": [
+            499999999999965000,
+            9999998357440,
+            1642560,
+            1141440
+          ],
+          "postTokenBalances": [],
+          "preBalances": [
+            499999999999975000,
+            9999998357440,
+            1642560,
+            1141440
+          ],
+          "preTokenBalances": [],
+          "rewards": null,
+          "status": {
+            "Ok": null
+          }
+        },
+        "transaction": {
+          "message": {
+            "accountKeys": [
+              "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6",
+              "tstYmkF9JHjZbSugJe1H3ygUTox1bqSxpn5QjxMwVrm",
+              "2whzE4Lrzjp1eLAHoWDBsA1m42A2kTM4QV8d1dAwsYEr",
+              "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc"
+            ],
+            "addressTableLookups": [],
+            "header": {
+              "numReadonlySignedAccounts": 1,
+              "numReadonlyUnsignedAccounts": 1,
+              "numRequiredSignatures": 2
+            },
+            "instructions": [
+              {
+                "accounts": [
+                  2,
+                  1
+                ],
+                "data": "52a4tWaV26rQ3y",
+                "programIdIndex": 3,
+                "stackHeight": null
+              }
+            ],
+            "recentBlockhash": "AMDEpsUNteud7EE9WhFhR1geQpKdrmUkCsJiJ8fxikd5"
+          },
+          "signatures": [
+            "2ofp39f9qJthLTdf9xo4Uc9TdHAA2ugjHPLxTK2MPJY9cjw5nNiKxEmqSDA9sNtWC2NtGXRmJ7XGZJssYBcPL5n7",
+            "3LhX8kPEMhf4kph2TKnUSxGNT2EJFcwWYxXYyBkopqZEwj1kwh2tvheF9giBPST3aNi1Qt6YGrpPgNYvXCL748ez"
+          ]
+        },
+        "version": 0
+      }
+    ]
+  },
+  "id": 1
+}

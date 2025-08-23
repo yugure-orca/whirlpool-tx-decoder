@@ -1,0 +1,77 @@
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "blockHeight": 70,
+    "blockTime": 1755929927,
+    "blockhash": "HqD85U4xy81r1GgDA2dSdimteWoeoBMwwYur7YPFcA4j",
+    "parentSlot": 69,
+    "previousBlockhash": "5be3x5KhxNkGFA8p3R3pQNFGStYumVTUY75qaZMM9wAs",
+    "transactions": [
+      {
+        "meta": {
+          "computeUnitsConsumed": 3455,
+          "err": null,
+          "fee": 5000,
+          "innerInstructions": [],
+          "loadedAddresses": {
+            "readonly": [],
+            "writable": []
+          },
+          "logMessages": [
+            "Program whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc invoke [1]",
+            "Program log: Instruction: MigrateRepurposeRewardAuthoritySpace",
+            "Program whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc consumed 3455 of 200000 compute units",
+            "Program whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc success"
+          ],
+          "postBalances": [
+            499999999999995000,
+            5435760,
+            1141440
+          ],
+          "postTokenBalances": [],
+          "preBalances": [
+            5e+17,
+            5435760,
+            1141440
+          ],
+          "preTokenBalances": [],
+          "rewards": null,
+          "status": {
+            "Ok": null
+          }
+        },
+        "transaction": {
+          "message": {
+            "accountKeys": [
+              "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6",
+              "7vWRTPPBq3aNaJZsrfterTz1BSjht4YSHBXJwnbuV6SC",
+              "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc"
+            ],
+            "addressTableLookups": [],
+            "header": {
+              "numReadonlySignedAccounts": 0,
+              "numReadonlyUnsignedAccounts": 1,
+              "numRequiredSignatures": 1
+            },
+            "instructions": [
+              {
+                "accounts": [
+                  1
+                ],
+                "data": "cuCwzfQgVLa",
+                "programIdIndex": 2,
+                "stackHeight": null
+              }
+            ],
+            "recentBlockhash": "HPGcTev4231wmu3XYtF4NCCkX2kwsxg4CUyEZP6paTuf"
+          },
+          "signatures": [
+            "kJymaS8Bb4hDzRZdh2EPBUL2ZS8XibpSx5Ups6mrRb8v5x1xHqVfytvahN2Z95Wx3xk6wmP7PeyzQmfFVcHk9wE"
+          ]
+        },
+        "version": 0
+      }
+    ]
+  },
+  "id": 1
+}
