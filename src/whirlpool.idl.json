@@ -1,5 +1,5 @@
 {
-  "version": "0.4.1",
+  "version": "0.5.0",
   "name": "whirlpool",
   "instructions": [
     {
@@ -7,6 +7,9 @@
       "docs": [
         "Initializes a WhirlpoolsConfig account that hosts info & authorities",
         "required to govern a set of Whirlpools.",
+        "",
+        "### Authority",
+        "- \"authority\" - Set authority that is one of ADMINS.",
         "",
         "### Parameters",
         "- `fee_authority` - Authority authorized to initialize fee-tiers and set customs fees.",
@@ -2181,7 +2184,7 @@
     {
       "name": "transferLockedPosition",
       "docs": [
-        "Transfer a locked position to to a different token account.",
+        "Transfer a locked position to a different token account.",
         "",
         "### Authority",
         "- `position_authority` - The authority that owns the position token."
@@ -2662,9 +2665,57 @@
       ]
     },
     {
+      "name": "setConfigFeatureFlag",
+      "docs": [
+        "Sets the feature flag for a WhirlpoolConfig.",
+        "",
+        "### Authority",
+        "- \"authority\" - Set authority that is one of ADMINS.",
+        "",
+        "### Parameters",
+        "- `feature_flag` - The feature flag that the WhirlpoolConfig will use."
+      ],
+      "accounts": [
+        {
+          "name": "whirlpoolsConfig",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "featureFlag",
+          "type": {
+            "defined": "ConfigFeatureFlag"
+          }
+        }
+      ]
+    },
+    {
+      "name": "migrateRepurposeRewardAuthoritySpace",
+      "docs": [
+        "Migration instruction to repurpose the reward authority space in the Whirlpool.",
+        "TODO: This instruction should be removed once all pools have been migrated."
+      ],
+      "accounts": [
+        {
+          "name": "whirlpool",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "collectFeesV2",
       "docs": [
         "Collect fees accrued for this position.",
+        "This instruction works with both Token and Token-2022.",
         "",
         "### Authority",
         "- `position_authority` - authority that owns the token corresponding to this desired position."
@@ -2751,6 +2802,7 @@
       "name": "collectProtocolFeesV2",
       "docs": [
         "Collect the protocol fees accrued in this Whirlpool",
+        "This instruction works with both Token and Token-2022.",
         "",
         "### Authority",
         "- `collect_protocol_fees_authority` - assigned authority in the WhirlpoolConfig that can collect protocol fees"
@@ -2832,6 +2884,7 @@
       "name": "collectRewardV2",
       "docs": [
         "Collect rewards accrued for this position.",
+        "This instruction works with both Token and Token-2022.",
         "",
         "### Authority",
         "- `position_authority` - authority that owns the token corresponding to this desired position."
@@ -2902,6 +2955,7 @@
       "name": "decreaseLiquidityV2",
       "docs": [
         "Withdraw liquidity from a position in the Whirlpool. This call also updates the position's accrued fees and rewards.",
+        "This instruction works with both Token and Token-2022.",
         "",
         "### Authority",
         "- `position_authority` - authority that owns the token corresponding to this desired position.",
@@ -3020,6 +3074,7 @@
       "name": "increaseLiquidityV2",
       "docs": [
         "Add liquidity to a position in the Whirlpool. This call also updates the position's accrued fees and rewards.",
+        "This instruction works with both Token and Token-2022.",
         "",
         "### Authority",
         "- `position_authority` - authority that owns the token corresponding to this desired position.",
@@ -3138,6 +3193,7 @@
       "name": "initializePoolV2",
       "docs": [
         "Initializes a Whirlpool account.",
+        "This instruction works with both Token and Token-2022.",
         "Fee rate is set to the default values on the config and supplied fee_tier.",
         "",
         "### Parameters",
@@ -3237,6 +3293,7 @@
       "name": "initializeRewardV2",
       "docs": [
         "Initialize reward for a Whirlpool. A pool can only support up to a set number of rewards.",
+        "This instruction works with both Token and Token-2022.",
         "",
         "### Authority",
         "- \"reward_authority\" - assigned authority by the reward_super_authority for the specified",
@@ -3308,6 +3365,7 @@
       "name": "setRewardEmissionsV2",
       "docs": [
         "Set the reward emissions for a reward in a Whirlpool.",
+        "This instruction works with both Token and Token-2022.",
         "",
         "### Authority",
         "- \"reward_authority\" - assigned authority by the reward_super_authority for the specified",
@@ -3357,6 +3415,7 @@
       "name": "swapV2",
       "docs": [
         "Perform a swap in this Whirlpool",
+        "This instruction works with both Token and Token-2022.",
         "",
         "### Authority",
         "- \"token_authority\" - The authority to withdraw tokens from the input token account.",
@@ -3490,6 +3549,7 @@
       "name": "twoHopSwapV2",
       "docs": [
         "Perform a two-hop swap in this Whirlpool",
+        "This instruction works with both Token and Token-2022.",
         "",
         "### Authority",
         "- \"token_authority\" - The authority to withdraw tokens from the input token account.",
@@ -3678,6 +3738,12 @@
     },
     {
       "name": "initializeConfigExtension",
+      "docs": [
+        "Initializes a WhirlpoolConfigExtension account that hosts info & authorities.",
+        "",
+        "### Authority",
+        "- \"fee_authority\" - Set authority in the WhirlpoolConfig"
+      ],
       "accounts": [
         {
           "name": "config",
@@ -3709,6 +3775,13 @@
     },
     {
       "name": "setConfigExtensionAuthority",
+      "docs": [
+        "Sets the config extension authority for a WhirlpoolsConfigExtension.",
+        "Only the current config extension authority has permission to invoke this instruction.",
+        "",
+        "### Authority",
+        "- \"config_extension_authority\" - Set authority in the WhirlpoolConfigExtension"
+      ],
       "accounts": [
         {
           "name": "whirlpoolsConfig",
@@ -3735,6 +3808,13 @@
     },
     {
       "name": "setTokenBadgeAuthority",
+      "docs": [
+        "Sets the token badge authority for a WhirlpoolsConfigExtension.",
+        "Only the config extension authority has permission to invoke this instruction.",
+        "",
+        "### Authority",
+        "- \"config_extension_authority\" - Set authority in the WhirlpoolConfigExtension"
+      ],
       "accounts": [
         {
           "name": "whirlpoolsConfig",
@@ -3761,6 +3841,15 @@
     },
     {
       "name": "initializeTokenBadge",
+      "docs": [
+        "Initialize a TokenBadge account.",
+        "",
+        "### Authority",
+        "- \"token_badge_authority\" - Set authority in the WhirlpoolConfigExtension",
+        "",
+        "### Special Errors",
+        "- `FeatureIsNotEnabled` - If the feature flag for token badges is not enabled."
+      ],
       "accounts": [
         {
           "name": "whirlpoolsConfig",
@@ -3802,6 +3891,15 @@
     },
     {
       "name": "deleteTokenBadge",
+      "docs": [
+        "Delete a TokenBadge account.",
+        "",
+        "### Authority",
+        "- \"token_badge_authority\" - Set authority in the WhirlpoolConfigExtension",
+        "",
+        "### Special Errors",
+        "- `FeatureIsNotEnabled` - If the feature flag for token badges is not enabled."
+      ],
       "accounts": [
         {
           "name": "whirlpoolsConfig",
@@ -3835,6 +3933,56 @@
         }
       ],
       "args": []
+    },
+    {
+      "name": "setTokenBadgeAttribute",
+      "docs": [
+        "Set an attribute on a TokenBadge account.",
+        "",
+        "### Authority",
+        "- \"token_badge_authority\" - Set authority in the WhirlpoolConfigExtension",
+        "",
+        "### Parameters",
+        "- `attribute` - The attribute to set on the TokenBadge account.",
+        "",
+        "#### Special Errors",
+        "- `FeatureIsNotEnabled` - If the feature flag for token badges is not enabled."
+      ],
+      "accounts": [
+        {
+          "name": "whirlpoolsConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "whirlpoolsConfigExtension",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenBadgeAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenBadge",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "attribute",
+          "type": {
+            "defined": "TokenBadgeAttribute"
+          }
+        }
+      ]
     },
     {
       "name": "idlInclude",
@@ -3954,6 +4102,10 @@
           {
             "name": "defaultProtocolFeeRate",
             "type": "u16"
+          },
+          {
+            "name": "featureFlags",
+            "type": "u16"
           }
         ]
       }
@@ -4039,7 +4191,7 @@
         ]
       }
     },
-        {
+    {
       "name": "PositionBundle",
       "type": {
         "kind": "struct",
@@ -4191,6 +4343,10 @@
           {
             "name": "tokenMint",
             "type": "publicKey"
+          },
+          {
+            "name": "attributeRequireNonTransferablePosition",
+            "type": "bool"
           }
         ]
       }
@@ -4298,6 +4454,20 @@
     }
   ],
   "types": [
+    {
+      "name": "ConfigFeatureFlag",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "TokenBadge",
+            "fields": [
+              "bool"
+            ]
+          }
+        ]
+      }
+    },
     {
       "name": "DynamicTick",
       "type": {
@@ -4536,6 +4706,20 @@
       }
     },
     {
+      "name": "TokenBadgeAttribute",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "RequireNonTransferablePosition",
+            "fields": [
+              "bool"
+            ]
+          }
+        ]
+      }
+    },
+    {
       "name": "WhirlpoolRewardInfo",
       "docs": [
         "Stores the state relevant for tracking liquidity mining rewards at the `Whirlpool` level.",
@@ -4561,11 +4745,22 @@
             "type": "publicKey"
           },
           {
-            "name": "authority",
+            "name": "extension",
             "docs": [
-              "Authority account that has permission to initialize the reward and set emissions."
+              "reward_infos[0]: Authority account that has permission to initialize the reward and set emissions.",
+              "reward_infos[1]: used for a struct that contains fields for extending the functionality of Whirlpool.",
+              "reward_infos[2]: reserved for future use.",
+              "",
+              "Historical notes:",
+              "Originally, this was a field named \"authority\", but it was found that there was no opportunity",
+              "to set different authorities for the three rewards. Therefore, the use of this field was changed for Whirlpool's future extensibility."
             ],
-            "type": "publicKey"
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
           },
           {
             "name": "emissionsPerSecondX64",
@@ -5209,6 +5404,16 @@
       "code": 6065,
       "name": "RentCalculationError",
       "msg": "Rent calculation error"
+    },
+    {
+      "code": 6066,
+      "name": "FeatureIsNotEnabled",
+      "msg": "Feature is not enabled"
+    },
+    {
+      "code": 6067,
+      "name": "PositionWithTokenExtensionsRequired",
+      "msg": "This whirlpool only supports open_position_with_token_extensions instruction"
     }
   ],
   "metadata": {
