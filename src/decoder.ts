@@ -75,6 +75,11 @@ import {
   DecodedSetFeeRateByDelegatedFeeAuthorityInstruction,
   DecodedSetPresetAdaptiveFeeConstantsInstruction,
   DecodedInitializeDynamicTickArrayInstruction,
+  ConfigFeatureFlag,
+  TokenBadgeAttribute,
+  DecodedSetConfigFeatureFlagInstruction,
+  DecodedSetTokenBadgeAttributeInstruction,
+  DecodedMigrateRepurposeRewardAuthoritySpaceInstruction,
 } from "./types";
 
 // IDL
@@ -324,6 +329,17 @@ export class WhirlpoolTransactionDecoder {
         case "initializeDynamicTickArray":
           decodedInstructions.push(this.decodeInitializeDynamicTickArrayInstruction(decoded, ix.accounts));
           break;
+        // Non Transferable Position
+        case "setConfigFeatureFlag":
+          decodedInstructions.push(this.decodeSetConfigFeatureFlagInstruction(decoded, ix.accounts));
+          break;
+        case "setTokenBadgeAttribute":
+          decodedInstructions.push(this.decodeSetTokenBadgeAttributeInstruction(decoded, ix.accounts));
+          break;
+        // Migrate / Repurpose Reward Authority Space
+        case "migrateRepurposeRewardAuthoritySpace":
+          decodedInstructions.push(this.decodeMigrateRepurposeRewardAuthoritySpaceInstruction(decoded, ix.accounts));
+          break;
         // It no longer exists today. (used to fix a bug)
         case "adminIncreaseLiquidity":
           decodedInstructions.push(this.decodeAdminIncreaseLiquidityInstruction(decoded, ix.accounts));
@@ -570,10 +586,44 @@ export class WhirlpoolTransactionDecoder {
   private static decodeLockType(lockType: { [k: string]: object }): LockType {
     const keys = Object.keys(lockType);
     invariant(keys.length === 1, "Invalid lock type");
-    switch (keys[0]) {
-      case "permanent": return { name: "permanent" };
+    const key = keys[0];
+    switch (key) {
+      case "permanent":
+        return { name: "permanent" };
       default:
-        invariant(false, `Unknown lock type: ${keys[0]}`);
+        invariant(false, `Unknown lock type: ${key}`);
+    }
+  }
+
+  private static decodeConfigFeatureFlag(featureFlag: { [k: string]: object }): ConfigFeatureFlag {
+    const keys = Object.keys(featureFlag);
+    invariant(keys.length === 1, "Invalid config feature flag");
+    const key = keys[0];
+    const variant = featureFlag[key];
+    switch (key) {
+      case "tokenBadge":
+        invariant(Array.isArray(variant), "Invalid tokenBadge variant");
+        invariant(variant.length === 1, "Invalid tokenBadge variant length");
+        invariant(typeof variant[0] === "boolean", "Invalid tokenBadge variant[0] type");
+        return { name: "tokenBadge", enabled: variant[0] };
+      default:
+        invariant(false, `Unknown feature flag: ${key}`);
+    }
+  }
+
+  private static decodeTokenBadgeAttribute(attribute: { [k: string]: object }): TokenBadgeAttribute {
+    const keys = Object.keys(attribute);
+    invariant(keys.length === 1, "Invalid token badge attribute");
+    const key = keys[0];
+    const variant = attribute[key];
+    switch (key) {
+      case "requireNonTransferablePosition":
+        invariant(Array.isArray(variant), "Invalid requireNonTransferablePosition variant");
+        invariant(variant.length === 1, "Invalid requireNonTransferablePosition variant length");
+        invariant(typeof variant[0] === "boolean", "Invalid requireNonTransferablePosition variant[0] type");
+        return { name: "requireNonTransferablePosition", required: variant[0] };
+      default:
+        invariant(false, `Unknown token badge attribute: ${key}`);
     }
   }
 
@@ -1954,6 +2004,51 @@ export class WhirlpoolTransactionDecoder {
         funder: accounts[1],
         tickArray: accounts[2],
         systemProgram: accounts[3],
+      },
+    };
+  }
+
+  private static decodeSetConfigFeatureFlagInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedSetConfigFeatureFlagInstruction {
+    invariant(ix.name === "setConfigFeatureFlag", "Invalid instruction name");
+    invariant(accounts.length >= 2, "Invalid accounts");
+    return {
+      name: "setConfigFeatureFlag",
+      data: {
+        featureFlag: this.decodeConfigFeatureFlag(ix.data["featureFlag"]),
+      },
+      accounts: {
+        whirlpoolsConfig: accounts[0],
+        authority: accounts[1],
+      },
+    };
+  }
+
+  private static decodeSetTokenBadgeAttributeInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedSetTokenBadgeAttributeInstruction {
+    invariant(ix.name === "setTokenBadgeAttribute", "Invalid instruction name");
+    invariant(accounts.length >= 5, "Invalid accounts");
+    return {
+      name: "setTokenBadgeAttribute",
+      data: {
+        attribute: this.decodeTokenBadgeAttribute(ix.data["tokenBadge"]),
+      },
+      accounts: {
+        whirlpoolsConfig: accounts[0],
+        whirlpoolsConfigExtension: accounts[1],
+        tokenBadgeAuthority: accounts[2],
+        tokenMint: accounts[3],
+        tokenBadge: accounts[4],
+      },
+    };
+  }
+
+  private static decodeMigrateRepurposeRewardAuthoritySpaceInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedMigrateRepurposeRewardAuthoritySpaceInstruction {
+    invariant(ix.name === "migrateRepurposeRewardAuthoritySpace", "Invalid instruction name");
+    invariant(accounts.length >= 1, "Invalid accounts");
+    return {
+      name: "migrateRepurposeRewardAuthoritySpace",
+      data: {},
+      accounts: {
+        whirlpool: accounts[0],
       },
     };
   }
