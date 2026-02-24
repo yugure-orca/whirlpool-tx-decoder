@@ -23,6 +23,10 @@ export enum RemainingAccountsType {
   SupplementalTickArrays,
   SupplementalTickArraysOne,
   SupplementalTickArraysTwo,
+  TransferHookDepositA,
+  TransferHookDepositB,
+  TransferHookWithdrawalA,
+  TransferHookWithdrawalB,
 }
 export type RemainingAccountsSlice = {
   accountsType: RemainingAccountsType;
@@ -48,6 +52,27 @@ export type TokenBadgeAttributeRequireNonTransferablePosition = {
   name: "requireNonTransferablePosition";
   // fields value
   required: boolean;
+};
+
+export type RepositionLiquidityMethod = RepositionLiquidityMethodByLiquidity;
+export type RepositionLiquidityMethodByLiquidity = {
+  name: "byLiquidity";
+  // fields value
+  newLiquidityAmount: BN;
+  existingRangeTokenMinA: BN;
+  existingRangeTokenMinB: BN;
+  newRangeTokenMaxA: BN;
+  newRangeTokenMaxB: BN;
+};
+
+export type IncreaseLiquidityMethod = IncreaseLiquidityMethodByTokenAmounts;
+export type IncreaseLiquidityMethodByTokenAmounts = {
+  name: "byTokenAmounts";
+  // fields value
+  tokenMaxA: BN;
+  tokenMaxB: BN;
+  minSqrtPrice: BN;
+  maxSqrtPrice: BN;
 };
 
 export type InstructionJSON = {
@@ -170,7 +195,10 @@ export type DecodedWhirlpoolInstruction =
   DecodedSetConfigFeatureFlagInstruction |
   DecodedSetTokenBadgeAttributeInstruction |
   DecodedAdminIncreaseLiquidityInstruction |
-  DecodedMigrateRepurposeRewardAuthoritySpaceInstruction;
+  DecodedMigrateRepurposeRewardAuthoritySpaceInstruction |
+  DecodedSetAdaptiveFeeConstantsInstruction |
+  DecodedRepositionLiquidityV2Instruction |
+  DecodedIncreaseLiquidityByTokenAmountsV2Instruction;
 
 export type DecodedSwapInstruction = {
   name: "swap";
@@ -1267,4 +1295,83 @@ export type DecodedMigrateRepurposeRewardAuthoritySpaceInstruction = {
   accounts: {
     whirlpool: PubkeyString;
   };
+};
+
+export type DecodedSetAdaptiveFeeConstantsInstruction = {
+  name: "setAdaptiveFeeConstants";
+  data: {
+    filterPeriod: number | null;
+    decayPeriod: number | null;
+    reductionFactor: number | null;
+    adaptiveFeeControlFactor: number | null;
+    maxVolatilityAccumulator: number | null;
+    tickGroupSize: number | null;
+    majorSwapThresholdTicks: number | null;
+  };
+  accounts: {
+    whirlpool: PubkeyString;
+    whirlpoolsConfig: PubkeyString;
+    oracle: PubkeyString;
+    feeAuthority: PubkeyString;
+  };
+};
+
+export type DecodedRepositionLiquidityV2Instruction = {
+  name: "repositionLiquidityV2";
+  data: {
+    newTickLowerIndex: number;
+    newTickUpperIndex: number;
+    method: RepositionLiquidityMethod;
+    remainingAccountsInfo: RemainingAccountsInfo;
+  };
+  accounts: {
+    whirlpool: PubkeyString;
+    tokenProgramA: PubkeyString;
+    tokenProgramB: PubkeyString;
+    memoProgram: PubkeyString;
+    positionAuthority: PubkeyString;
+    funder: PubkeyString;
+    position: PubkeyString;
+    positionTokenAccount: PubkeyString;
+    tokenMintA: PubkeyString;
+    tokenMintB: PubkeyString;
+    tokenOwnerAccountA: PubkeyString;
+    tokenOwnerAccountB: PubkeyString;
+    tokenVaultA: PubkeyString;
+    tokenVaultB: PubkeyString;
+    existingTickArrayLower: PubkeyString;
+    existingTickArrayUpper: PubkeyString;
+    newTickArrayLower: PubkeyString;
+    newTickArrayUpper: PubkeyString;
+    systemProgram: PubkeyString;
+  };
+  remainingAccounts: RemainingAccounts;
+  transfers: TransferAmountWithTransferFeeConfig[];
+};
+
+export type DecodedIncreaseLiquidityByTokenAmountsV2Instruction = {
+  name: "increaseLiquidityByTokenAmountsV2";
+  data: {
+    method: IncreaseLiquidityMethod;
+    remainingAccountsInfo: RemainingAccountsInfo;
+  };
+  accounts: {
+    whirlpool: PubkeyString;
+    tokenProgramA: PubkeyString;
+    tokenProgramB: PubkeyString;
+    memoProgram: PubkeyString;
+    positionAuthority: PubkeyString;
+    position: PubkeyString;
+    positionTokenAccount: PubkeyString;
+    tokenMintA: PubkeyString;
+    tokenMintB: PubkeyString;
+    tokenOwnerAccountA: PubkeyString;
+    tokenOwnerAccountB: PubkeyString;
+    tokenVaultA: PubkeyString;
+    tokenVaultB: PubkeyString;
+    tickArrayLower: PubkeyString;
+    tickArrayUpper: PubkeyString;
+  };
+  remainingAccounts: RemainingAccounts;
+  transfers: TransferAmountWithTransferFeeConfig[];
 };

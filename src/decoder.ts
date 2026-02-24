@@ -80,6 +80,11 @@ import {
   DecodedSetConfigFeatureFlagInstruction,
   DecodedSetTokenBadgeAttributeInstruction,
   DecodedMigrateRepurposeRewardAuthoritySpaceInstruction,
+  DecodedSetAdaptiveFeeConstantsInstruction,
+  DecodedRepositionLiquidityV2Instruction,
+  DecodedIncreaseLiquidityByTokenAmountsV2Instruction,
+  RepositionLiquidityMethod,
+  IncreaseLiquidityMethod,
 } from "./types";
 
 // IDL
@@ -336,6 +341,15 @@ export class WhirlpoolTransactionDecoder {
         case "setTokenBadgeAttribute":
           decodedInstructions.push(this.decodeSetTokenBadgeAttributeInstruction(decoded, ix.accounts));
           break;
+        case "setAdaptiveFeeConstants":
+          decodedInstructions.push(this.decodeSetAdaptiveFeeConstantsInstruction(decoded, ix.accounts));
+          break;
+        case "repositionLiquidityV2":
+          decodedInstructions.push(this.decodeRepositionLiquidityV2Instruction(decoded, ix.accounts, this.decodeV2TransferInstructions(2, instructions.slice(i+1))));
+          break;
+        case "increaseLiquidityByTokenAmountsV2":
+          decodedInstructions.push(this.decodeIncreaseLiquidityByTokenAmountsInstruction(decoded, ix.accounts, this.decodeV2TransferInstructions(2, instructions.slice(i+1))));
+          break;
         // Migrate / Repurpose Reward Authority Space
         case "migrateRepurposeRewardAuthoritySpace":
           decodedInstructions.push(this.decodeMigrateRepurposeRewardAuthoritySpaceInstruction(decoded, ix.accounts));
@@ -576,6 +590,10 @@ export class WhirlpoolTransactionDecoder {
         case "supplementalTickArrays": return { accountsType: RemainingAccountsType.SupplementalTickArrays, length };
         case "supplementalTickArraysOne": return { accountsType: RemainingAccountsType.SupplementalTickArraysOne, length };
         case "supplementalTickArraysTwo": return { accountsType: RemainingAccountsType.SupplementalTickArraysTwo, length };
+        case "transferHookDepositA": return { accountsType: RemainingAccountsType.TransferHookDepositA, length };
+        case "transferHookDepositB": return { accountsType: RemainingAccountsType.TransferHookDepositB, length };
+        case "transferHookWithdrawalA": return { accountsType: RemainingAccountsType.TransferHookWithdrawalA, length };
+        case "transferHookWithdrawalB": return { accountsType: RemainingAccountsType.TransferHookWithdrawalB, length };
         default:
           invariant(false, `Unknown account type: ${keys[0]}`);
       }
@@ -629,6 +647,69 @@ export class WhirlpoolTransactionDecoder {
         return { name: "requireNonTransferablePosition", required: variant["0"] };
       default:
         invariant(false, `Unknown token badge attribute: ${key}`);
+    }
+  }
+
+  private static decodeRepositionLiquidityMethod(method: { [k: string]: object }): RepositionLiquidityMethod {
+    const keys = Object.keys(method);
+    invariant(keys.length === 1, "Invalid reposition liquidity method");
+    const key = keys[0];
+
+    const variant = method[key];
+    invariant(!!variant && typeof variant === "object", "Invalid reposition liquidity method object");
+
+    switch (key) {
+      case "byLiquidity":
+        invariant("newLiquidityAmount" in variant, "Invalid byLiquidity variant: missing newLiquidityAmount");
+        invariant(BN.isBN(variant["newLiquidityAmount"]), "Invalid byLiquidity variant: newLiquidityAmount is not BN");
+        invariant("existingRangeTokenMinA" in variant, "Invalid byLiquidity variant: missing existingRangeTokenMinA");
+        invariant(BN.isBN(variant["existingRangeTokenMinA"]), "Invalid byLiquidity variant: existingRangeTokenMinA is not BN");
+        invariant("existingRangeTokenMinB" in variant, "Invalid byLiquidity variant: missing existingRangeTokenMinB");
+        invariant(BN.isBN(variant["existingRangeTokenMinB"]), "Invalid byLiquidity variant: existingRangeTokenMinB is not BN");
+        invariant("newRangeTokenMaxA" in variant, "Invalid byLiquidity variant: missing newRangeTokenMaxA");
+        invariant(BN.isBN(variant["newRangeTokenMaxA"]), "Invalid byLiquidity variant: newRangeTokenMaxA is not BN");
+        invariant("newRangeTokenMaxB" in variant, "Invalid byLiquidity variant: missing newRangeTokenMaxB");
+        invariant(BN.isBN(variant["newRangeTokenMaxB"]), "Invalid byLiquidity variant: newRangeTokenMaxB is not BN");
+        return {
+          name: "byLiquidity",
+          newLiquidityAmount: variant["newLiquidityAmount"] as BN,
+          existingRangeTokenMinA: variant["existingRangeTokenMinA"] as BN,
+          existingRangeTokenMinB: variant["existingRangeTokenMinB"] as BN,
+          newRangeTokenMaxA: variant["newRangeTokenMaxA"] as BN,
+          newRangeTokenMaxB: variant["newRangeTokenMaxB"] as BN,
+        };
+      default:
+        invariant(false, `Unknown reposition liquidity method: ${key}`);
+    }
+  }
+
+  private static decodeIncreaseLiquidityMethod(method: { [k: string]: object }): IncreaseLiquidityMethod {
+    const keys = Object.keys(method);
+    invariant(keys.length === 1, "Invalid increase liquidity method");
+    const key = keys[0];
+
+    const variant = method[key];
+    invariant(!!variant && typeof variant === "object", "Invalid increase liquidity method object");
+
+    switch (key) {
+      case "byTokenAmounts":
+        invariant("tokenMaxA" in variant, "Invalid byTokenAmounts variant: missing tokenMaxA");
+        invariant(BN.isBN(variant["tokenMaxA"]), "Invalid byTokenAmounts variant: tokenMaxA is not BN");
+        invariant("tokenMaxB" in variant, "Invalid byTokenAmounts variant: missing tokenMaxB");
+        invariant(BN.isBN(variant["tokenMaxB"]), "Invalid byTokenAmounts variant: tokenMaxB is not BN");
+        invariant("minSqrtPrice" in variant, "Invalid byTokenAmounts variant: missing minSqrtPrice");
+        invariant(BN.isBN(variant["minSqrtPrice"]), "Invalid byTokenAmounts variant: minSqrtPrice is not BN");
+        invariant("maxSqrtPrice" in variant, "Invalid byTokenAmounts variant: missing maxSqrtPrice");
+        invariant(BN.isBN(variant["maxSqrtPrice"]), "Invalid byTokenAmounts variant: maxSqrtPrice is not BN");
+        return {
+          name: "byTokenAmounts",
+          tokenMaxA: variant["tokenMaxA"] as BN,
+          tokenMaxB: variant["tokenMaxB"] as BN,
+          minSqrtPrice: variant["minSqrtPrice"] as BN,
+          maxSqrtPrice: variant["maxSqrtPrice"] as BN,
+        };
+      default:
+        invariant(false, `Unknown increase liquidity method: ${key}`);
     }
   }
 
@@ -2056,5 +2137,109 @@ export class WhirlpoolTransactionDecoder {
         whirlpool: accounts[0],
       },
     };
+  }
+
+  private static decodeSetAdaptiveFeeConstantsInstruction(ix: AnchorInstruction, accounts: PubkeyString[]): DecodedSetAdaptiveFeeConstantsInstruction {
+    invariant(ix.name === "setAdaptiveFeeConstants", "Invalid instruction name");
+    invariant(accounts.length >= 4, "Invalid accounts");
+
+    const checkData = (field: string) => {
+      invariant(typeof ix.data[field] === "number" || ix.data[field] === null, `Invalid ${field}`);
+    }
+    checkData("filterPeriod");
+    checkData("decayPeriod");
+    checkData("reductionFactor");
+    checkData("adaptiveFeeControlFactor");
+    checkData("maxVolatilityAccumulator");
+    checkData("tickGroupSize");
+    checkData("majorSwapThresholdTicks");
+
+    return {
+      name: "setAdaptiveFeeConstants",
+      data: {
+        filterPeriod: ix.data["filterPeriod"],
+        decayPeriod: ix.data["decayPeriod"],
+        reductionFactor: ix.data["reductionFactor"],
+        adaptiveFeeControlFactor: ix.data["adaptiveFeeControlFactor"],
+        maxVolatilityAccumulator: ix.data["maxVolatilityAccumulator"],
+        tickGroupSize: ix.data["tickGroupSize"],
+        majorSwapThresholdTicks: ix.data["majorSwapThresholdTicks"],
+      },
+      accounts: {
+        whirlpool: accounts[0],
+        whirlpoolsConfig: accounts[1],
+        oracle: accounts[2],
+        feeAuthority: accounts[3],
+      },
+    };
+  }
+
+  private static decodeRepositionLiquidityV2Instruction(ix: AnchorInstruction, accounts: PubkeyString[], transfers: TransferAmountWithTransferFeeConfig[]): DecodedRepositionLiquidityV2Instruction {
+    invariant(ix.name === "repositionLiquidityV2", "Invalid instruction name");
+    invariant(accounts.length >= 19, "Invalid accounts");
+    return {
+      name: "repositionLiquidityV2",
+      data: {
+        newTickLowerIndex: ix.data["newTickLowerIndex"],
+        newTickUpperIndex: ix.data["newTickUpperIndex"],
+        method: this.decodeRepositionLiquidityMethod(ix.data["method"]),
+        remainingAccountsInfo: this.decodeRemainingAccountsInfo(ix.data["remainingAccountsInfo"]),
+      },
+      accounts: {
+        whirlpool: accounts[0],
+        tokenProgramA: accounts[1],
+        tokenProgramB: accounts[2],
+        memoProgram: accounts[3],
+        positionAuthority: accounts[4],
+        funder: accounts[5],
+        position: accounts[6],
+        positionTokenAccount: accounts[7],
+        tokenMintA: accounts[8],
+        tokenMintB: accounts[9],
+        tokenOwnerAccountA: accounts[10],
+        tokenOwnerAccountB: accounts[11],
+        tokenVaultA: accounts[12],
+        tokenVaultB: accounts[13],
+        existingTickArrayLower: accounts[14],
+        existingTickArrayUpper: accounts[15],
+        newTickArrayLower: accounts[16],
+        newTickArrayUpper: accounts[17],
+        systemProgram: accounts[18],
+      },
+      remainingAccounts: accounts.slice(19),
+      transfers,
+    };
+  }
+
+  private static decodeIncreaseLiquidityByTokenAmountsInstruction(ix: AnchorInstruction, accounts: PubkeyString[], transfers: TransferAmountWithTransferFeeConfig[]): DecodedIncreaseLiquidityByTokenAmountsV2Instruction {
+    invariant(ix.name === "increaseLiquidityByTokenAmountsV2", "Invalid instruction name");
+    invariant(accounts.length >= 15, "Invalid accounts");
+    return {
+      name: "increaseLiquidityByTokenAmountsV2",
+      data: {
+        method: this.decodeIncreaseLiquidityMethod(ix.data["method"]),
+        remainingAccountsInfo: this.decodeRemainingAccountsInfo(ix.data["remainingAccountsInfo"]),
+      },
+      accounts: {
+        whirlpool: accounts[0],
+        tokenProgramA: accounts[1],
+        tokenProgramB: accounts[2],
+        memoProgram: accounts[3],
+        positionAuthority: accounts[4],
+        position: accounts[5],
+        positionTokenAccount: accounts[6],
+        tokenMintA: accounts[7],
+        tokenMintB: accounts[8],
+        tokenOwnerAccountA: accounts[9],
+        tokenOwnerAccountB: accounts[10],
+        tokenVaultA: accounts[11],
+        tokenVaultB: accounts[12],
+        tickArrayLower: accounts[13],
+        tickArrayUpper: accounts[14],
+      },
+      remainingAccounts: accounts.slice(15),
+      transfers,
+    };
+
   }
 }
