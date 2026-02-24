@@ -3985,6 +3985,376 @@
       ]
     },
     {
+      "name": "setAdaptiveFeeConstants",
+      "docs": [
+        "Sets specific adaptive fee constants for a pool. Only the provided constants will be updated,",
+        "others remain unchanged. Caller should avoid invoking this instruction when a pool's adaptive",
+        "fee is high to prevent LP revenue loss",
+        "",
+        "### Authority",
+        "- `fee_authority` - Set authority in the WhirlpoolsConfig",
+        "",
+        "### Parameters",
+        "All parameters are optional. Only provided values will be updated.",
+        "- `filter_period` - Period determine high frequency trading time window. (seconds)",
+        "- `decay_period` - Period determine when the adaptive fee start decrease. (seconds)",
+        "- `reduction_factor` - Adaptive fee rate decrement rate.",
+        "- `adaptive_fee_control_factor` - Adaptive fee control factor.",
+        "- `max_volatility_accumulator` - Max volatility accumulator.",
+        "- `tick_group_size` - Tick group size to define tick group index.",
+        "- `major_swap_threshold_ticks` - Major swap threshold ticks to define major swap.",
+        "",
+        "#### Special Errors",
+        "- `InvalidAdaptiveFeeConstants` - If the resulting constants are invalid for the pool's tick_spacing.",
+        "- `AdaptiveFeeConstantsUnchanged` - If the provided adaptive fee constants are unchanged from the existing constants."
+      ],
+      "accounts": [
+        {
+          "name": "whirlpool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "whirlpoolsConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "oracle",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "feeAuthority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "filterPeriod",
+          "type": {
+            "option": "u16"
+          }
+        },
+        {
+          "name": "decayPeriod",
+          "type": {
+            "option": "u16"
+          }
+        },
+        {
+          "name": "reductionFactor",
+          "type": {
+            "option": "u16"
+          }
+        },
+        {
+          "name": "adaptiveFeeControlFactor",
+          "type": {
+            "option": "u32"
+          }
+        },
+        {
+          "name": "maxVolatilityAccumulator",
+          "type": {
+            "option": "u32"
+          }
+        },
+        {
+          "name": "tickGroupSize",
+          "type": {
+            "option": "u16"
+          }
+        },
+        {
+          "name": "majorSwapThresholdTicks",
+          "type": {
+            "option": "u16"
+          }
+        }
+      ]
+    },
+    {
+      "name": "repositionLiquidityV2",
+      "docs": [
+        "An atomic instruction that repositions liquidity for a position through the following steps:",
+        "- Withdraws liquidity from the current position range",
+        "- Resets the position to a new tick range",
+        "- Adds liquidity to the new position range",
+        "- Restores fees and rewards",
+        "",
+        "This instruction works with both Token and Token-2022.",
+        "",
+        "### Authority",
+        "- `position_authority` - authority that owns the token corresponding to this desired position.",
+        "",
+        "### Parameters",
+        "- `new_tick_lower_index` - The new tick index for the lower end of the position range.",
+        "- `new_tick_upper_index` - The new tick index for the upper end of the position range.",
+        "- `new_liquidity_amount` - The total amount of Liquidity the user is willing to deposit.",
+        "- `existing_range_token_min_a` - The minimum amount of tokenA the user is willing to withdraw from the existing range.",
+        "- `existing_range_token_min_b` - The minimum amount of tokenB the user is willing to withdraw from the existing range.",
+        "- `new_range_token_max_a` - The maximum amount of tokenA the user is willing to deposit into the new range.",
+        "- `new_range_token_max_b` - The maximum amount of tokenB the user is willing to deposit into the new range.",
+        "",
+        "#### Special Errors",
+        "- `LiquidityZero` - Provided liquidity amount is zero.",
+        "- `LiquidityTooHigh` - Provided liquidity exceeds u128::max.",
+        "- `TokenMaxExceeded` - The required token to perform this operation exceeds the user defined amount.",
+        "- `TokenMinSubceeded` - The required token to perform this operation subceeds the user defined amount.",
+        "- `InvalidTickIndex` - If a provided tick is out of bounds, out of order or not a multiple of",
+        "the tick-spacing in this pool.",
+        "- `SameTickRangeNotAllowed` - The provided tick range is the same as the current tick range."
+      ],
+      "accounts": [
+        {
+          "name": "whirlpool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgramA",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgramB",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "memoProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "positionAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "funder",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "position",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "positionTokenAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMintA",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMintB",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenOwnerAccountA",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenOwnerAccountB",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenVaultA",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenVaultB",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "existingTickArrayLower",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "existingTickArrayUpper",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "newTickArrayLower",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "newTickArrayUpper",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "newTickLowerIndex",
+          "type": "i32"
+        },
+        {
+          "name": "newTickUpperIndex",
+          "type": "i32"
+        },
+        {
+          "name": "method",
+          "type": {
+            "defined": {
+              "name": "RepositionLiquidityMethod"
+            }
+          }
+        },
+        {
+          "name": "remainingAccountsInfo",
+          "type": {
+            "option": {
+              "defined": {
+                "name": "RemainingAccountsInfo"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "increaseLiquidityByTokenAmountsV2",
+      "docs": [
+        "Add liquidity to a position by specifying token maxima, not liquidity.",
+        "This instruction works with both Token and Token-2022.",
+        "",
+        "NOTE: This instruction is only implemented in Pinocchio, not Anchor.",
+        "",
+        "### Authority",
+        "- `position_authority` - authority that owns the token corresponding to this desired position.",
+        "",
+        "### Parameters",
+        "- `token_max_a` - The maximum amount of tokenA the user is willing to deposit.",
+        "- `token_max_b` - The maximum amount of tokenB the user is willing to deposit.",
+        "- `min_sqrt_price` - The minimum sqrt price allowed.",
+        "- `max_sqrt_price` - The maximum sqrt price allowed.",
+        "",
+        "",
+        "#### Special Errors",
+        "- `LiquidityZero` - Computed liquidity amount is zero.",
+        "- `LiquidityTooHigh` - Computed liquidity exceeds u128::max.",
+        "- `TokenMaxExceeded` - The required token to perform this operation exceeds the user defined amount."
+      ],
+      "accounts": [
+        {
+          "name": "whirlpool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgramA",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgramB",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "memoProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "positionAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "position",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "positionTokenAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMintA",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMintB",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenOwnerAccountA",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenOwnerAccountB",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenVaultA",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenVaultB",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tickArrayLower",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tickArrayUpper",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "method",
+          "type": {
+            "defined": {
+              "name": "IncreaseLiquidityMethod"
+            }
+          }
+        },
+        {
+          "name": "remainingAccountsInfo",
+          "type": {
+            "option": {
+              "defined": {
+                "name": "RemainingAccountsInfo"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "idlInclude",
       "accounts": [
         {
@@ -4469,6 +4839,68 @@
       }
     },
     {
+      "name": "IncreaseLiquidityMethod",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "ByTokenAmounts",
+            "fields": [
+              {
+                "name": "tokenMaxA",
+                "type": "u64"
+              },
+              {
+                "name": "tokenMaxB",
+                "type": "u64"
+              },
+              {
+                "name": "minSqrtPrice",
+                "type": "u128"
+              },
+              {
+                "name": "maxSqrtPrice",
+                "type": "u128"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "RepositionLiquidityMethod",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "ByLiquidity",
+            "fields": [
+              {
+                "name": "newLiquidityAmount",
+                "type": "u128"
+              },
+              {
+                "name": "existingRangeTokenMinA",
+                "type": "u64"
+              },
+              {
+                "name": "existingRangeTokenMinB",
+                "type": "u64"
+              },
+              {
+                "name": "newRangeTokenMaxA",
+                "type": "u64"
+              },
+              {
+                "name": "newRangeTokenMaxB",
+                "type": "u64"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "name": "DynamicTick",
       "type": {
         "kind": "enum",
@@ -4857,12 +5289,49 @@
           },
           {
             "name": "SupplementalTickArraysTwo"
+          },
+          {
+            "name": "TransferHookDepositA"
+          },
+          {
+            "name": "TransferHookDepositB"
+          },
+          {
+            "name": "TransferHookWithdrawalA"
+          },
+          {
+            "name": "TransferHookWithdrawalB"
           }
-        ]
+      ]
       }
     }
   ],
   "events": [
+    {
+      "name": "PositionOpened",
+      "fields": [
+        {
+          "name": "whirlpool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "position",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tickLowerIndex",
+          "type": "i32",
+          "index": false
+        },
+        {
+          "name": "tickUpperIndex",
+          "type": "i32",
+          "index": false
+        }
+      ]
+    },
     {
       "name": "LiquidityDecreased",
       "fields": [
@@ -4959,6 +5428,101 @@
         {
           "name": "tokenBTransferFee",
           "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "LiquidityRepositioned",
+      "fields": [
+        {
+          "name": "whirlpool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "position",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "existingRangeTickLowerIndex",
+          "type": "i32",
+          "index": false
+        },
+        {
+          "name": "existingRangeTickUpperIndex",
+          "type": "i32",
+          "index": false
+        },
+        {
+          "name": "newRangeTickLowerIndex",
+          "type": "i32",
+          "index": false
+        },
+        {
+          "name": "newRangeTickUpperIndex",
+          "type": "i32",
+          "index": false
+        },
+        {
+          "name": "existingRangeLiquidity",
+          "type": "u128",
+          "index": false
+        },
+        {
+          "name": "newRangeLiquidity",
+          "type": "u128",
+          "index": false
+        },
+        {
+          "name": "existingRangeTokenAAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "existingRangeTokenBAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "newRangeTokenAAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "newRangeTokenBAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tokenATransferAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tokenATransferFee",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "isTokenATransferFromOwner",
+          "type": "bool",
+          "index": false
+        },
+        {
+          "name": "tokenBTransferAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tokenBTransferFee",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "isTokenBTransferFromOwner",
+          "type": "bool",
           "index": false
         }
       ]
@@ -5414,6 +5978,16 @@
       "code": 6067,
       "name": "PositionWithTokenExtensionsRequired",
       "msg": "This whirlpool only supports open_position_with_token_extensions instruction"
+    },
+    {
+      "code": 6068,
+      "name": "AdaptiveFeeConstantsUnchanged",
+      "msg": "Provided adaptive fee constants are unchanged"
+    },
+    {
+      "code": 6069,
+      "name": "PriceSlippageOutOfBounds",
+      "msg": "Price outside slippage bounds"
     }
   ],
   "metadata": {
