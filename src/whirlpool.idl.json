@@ -4216,18 +4216,14 @@
         {
           "name": "method",
           "type": {
-            "defined": {
-              "name": "RepositionLiquidityMethod"
-            }
+            "defined": "RepositionLiquidityMethod"
           }
         },
         {
           "name": "remainingAccountsInfo",
           "type": {
             "option": {
-              "defined": {
-                "name": "RemainingAccountsInfo"
-              }
+              "defined": "RemainingAccountsInfo"
             }
           }
         }
@@ -4337,18 +4333,14 @@
         {
           "name": "method",
           "type": {
-            "defined": {
-              "name": "IncreaseLiquidityMethod"
-            }
+            "defined": "IncreaseLiquidityMethod"
           }
         },
         {
           "name": "remainingAccountsInfo",
           "type": {
             "option": {
-              "defined": {
-                "name": "RemainingAccountsInfo"
-              }
+              "defined": "RemainingAccountsInfo"
             }
           }
         }

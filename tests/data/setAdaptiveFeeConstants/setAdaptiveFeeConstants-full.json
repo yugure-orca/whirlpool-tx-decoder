@@ -1,0 +1,87 @@
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "blockHeight": 432255124,
+    "blockTime": 1771944611,
+    "blockhash": "2gei1fDbo95MTATJqox1byZyh3EkV2VhR5A9QaATpBFe",
+    "parentSlot": 444369307,
+    "previousBlockhash": "DznvtTCHC5snwxqaJRvVGap99Fyc5DEnCursmEGY6sY2",
+    "transactions": [
+      {
+        "meta": {
+          "computeUnitsConsumed": 3514,
+          "costUnits": 5314,
+          "err": null,
+          "fee": 5000,
+          "innerInstructions": [],
+          "loadedAddresses": {
+            "readonly": [],
+            "writable": []
+          },
+          "logMessages": [
+            "Program whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc invoke [1]",
+            "Program log: Instruction: SetAdaptiveFeeConstants",
+            "Program whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc consumed 3514 of 200000 compute units",
+            "Program whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc success"
+          ],
+          "postBalances": [
+            293459647438,
+            2658720,
+            2141440,
+            5435760,
+            511642560
+          ],
+          "postTokenBalances": [],
+          "preBalances": [
+            293459652438,
+            2658720,
+            2141440,
+            5435760,
+            511642560
+          ],
+          "preTokenBalances": [],
+          "rewards": null,
+          "status": {
+            "Ok": null
+          }
+        },
+        "transaction": {
+          "message": {
+            "accountKeys": [
+              "3otH3AHWqkqgSVfKFkrxyDqd2vK6LcaqigHrFEmWcGuo",
+              "ETu2xvY2zVKKfeQamani671qrvBxx7YPnKemji8HjdUo",
+              "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc",
+              "966HQTB3CKAL6AzqueVo3mFkaEiePCFLoGWXetoxBTH2",
+              "FcrweFY1G9HJAHG5inkGB6pKg1HZ6x9UC2WioAfWrGkR"
+            ],
+            "addressTableLookups": [],
+            "header": {
+              "numReadonlySignedAccounts": 0,
+              "numReadonlyUnsignedAccounts": 3,
+              "numRequiredSignatures": 1
+            },
+            "instructions": [
+              {
+                "accounts": [
+                  3,
+                  4,
+                  1,
+                  0
+                ],
+                "data": "ghE8rrp2UW3WFrAAqFmTkYckPDRi6q3PQALCVtU5WUmv7",
+                "programIdIndex": 2,
+                "stackHeight": 1
+              }
+            ],
+            "recentBlockhash": "9t6isRUudNrqJm1fDm6AqSR6Bzbn8VLHVXuM6BpgVZ6P"
+          },
+          "signatures": [
+            "2afdjGJ1eoxSeTa55Bn8v8Z3SAxMRrmQk6Akd9udQiRBbCbtMnK5n1hhme7rFecquXHsvGZZafTTFLwzBSCvtteF"
+          ]
+        },
+        "version": 0
+      }
+    ]
+  },
+  "id": 1
+}
