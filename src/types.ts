@@ -11,6 +11,10 @@ export type TransferAmountWithTransferFeeConfig = {
   // null if TransferFeeConfig exteension is not initialized
   transferFeeConfig: TransferFeeConfig | null;
 };
+export type TransferAmountWithTransferFeeConfigAndAccounts = TransferAmountWithTransferFeeConfig & {
+  source: PubkeyString;
+  destination: PubkeyString;
+};
 
 // RemainingAccounts
 export enum RemainingAccountsType {
@@ -1347,6 +1351,10 @@ export type DecodedRepositionLiquidityV2Instruction = {
   };
   remainingAccounts: RemainingAccounts;
   transfers: TransferAmountWithTransferFeeConfig[];
+  auxiliaries: {
+    isTokenATransferFromOwner: boolean;
+    isTokenBTransferFromOwner: boolean;
+  };
 };
 
 export type DecodedIncreaseLiquidityByTokenAmountsV2Instruction = {

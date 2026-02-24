@@ -85,6 +85,7 @@ import {
   DecodedIncreaseLiquidityByTokenAmountsV2Instruction,
   RepositionLiquidityMethod,
   IncreaseLiquidityMethod,
+  TransferAmountWithTransferFeeConfigAndAccounts,
 } from "./types";
 
 // IDL
@@ -364,7 +365,7 @@ export class WhirlpoolTransactionDecoder {
       }
     }
 
-    this.resolveAuxiliaries(decodedInstructions, transaction);
+    this.resolveLockRelatedAuxiliaries(decodedInstructions, transaction);
 
     return {
       decodedInstructions,
@@ -474,20 +475,20 @@ export class WhirlpoolTransactionDecoder {
     return postTokenAccountOwnerMap;
   }
 
-  private static resolveAuxiliaries(decodedInstructions: DecodedWhirlpoolInstruction[], transaction: TransactionJSON) {
+  private static resolveLockRelatedAuxiliaries(decodedInstructions: DecodedWhirlpoolInstruction[], transaction: TransactionJSON) {
     // Currently, the target is only lockPosition and transferLockedPosition
 
-    const lockRelateeedInstructionsGroupByPosition = new Map<string, (DecodedLockPositionInstruction | DecodedTransferLockedPositionInstruction)[]>();
+    const lockRelatedInstructionsGroupByPosition = new Map<string, (DecodedLockPositionInstruction | DecodedTransferLockedPositionInstruction)[]>();
     for (const ix of decodedInstructions) {
       if (ix.name !== "lockPosition" && ix.name !== "transferLockedPosition") continue;
 
       const position = ix.accounts.position;
-      if (!lockRelateeedInstructionsGroupByPosition.has(position)) {
-        lockRelateeedInstructionsGroupByPosition.set(position, []);
+      if (!lockRelatedInstructionsGroupByPosition.has(position)) {
+        lockRelatedInstructionsGroupByPosition.set(position, []);
       }
-      lockRelateeedInstructionsGroupByPosition.get(position)!.push(ix);
+      lockRelatedInstructionsGroupByPosition.get(position)!.push(ix);
     }
-    if (lockRelateeedInstructionsGroupByPosition.size === 0) return;
+    if (lockRelatedInstructionsGroupByPosition.size === 0) return;
 
     const postTokenAccountOwnerMap = this.pickPostTokenAccountOwner(transaction);
 
@@ -502,7 +503,7 @@ export class WhirlpoolTransactionDecoder {
     // - lockPosition, transferLockedPosition x N
     // - transferLockedPosition x N
     //
-    for (const instructions of lockRelateeedInstructionsGroupByPosition.values()) {
+    for (const instructions of lockRelatedInstructionsGroupByPosition.values()) {
       for (let i = 0; i < instructions.length; i++) {
         const ix = instructions[i];
         const nextInstruction = i + 1 < instructions.length ? instructions[i + 1] : null;
@@ -713,7 +714,7 @@ export class WhirlpoolTransactionDecoder {
     }
   }
 
-  private static decodeV2TransferInstructions(expectedTransfers: number, followingInstructions: Instruction[]): TransferAmountWithTransferFeeConfig[] {
+  private static decodeV2TransferInstructions(expectedTransfers: number, followingInstructions: Instruction[]): TransferAmountWithTransferFeeConfigAndAccounts[] {
     invariant(followingInstructions.length >= 1, "Invalid number of instructions");
 
     // strongly depends on stack height
@@ -730,7 +731,7 @@ export class WhirlpoolTransactionDecoder {
       directCpiInstructions.push(ix);
     }
 
-    const transfers: TransferAmountWithTransferFeeConfig[] = [];
+    const transfers: TransferAmountWithTransferFeeConfigAndAccounts[] = [];
     let transferFeeConfig = null;
     for (let i = 0; i < directCpiInstructions.length; i++) {
       const ix = directCpiInstructions[i];
@@ -752,7 +753,9 @@ export class WhirlpoolTransactionDecoder {
         case TOKEN_PROGRAM_ID_STRING:
         case TOKEN_2022_PROGRAM_ID_STRING:
           const amount = this.decodeTransferCheckedInstruction(ix);
-          transfers.push({ amount, transferFeeConfig });
+          const source = ix.accounts[0];
+          const destination = ix.accounts[2];
+          transfers.push({ amount, transferFeeConfig, source, destination });
           transferFeeConfig = null;
           break;
         default:
@@ -2174,9 +2177,28 @@ export class WhirlpoolTransactionDecoder {
     };
   }
 
-  private static decodeRepositionLiquidityV2Instruction(ix: AnchorInstruction, accounts: PubkeyString[], transfers: TransferAmountWithTransferFeeConfig[]): DecodedRepositionLiquidityV2Instruction {
+  private static decodeRepositionLiquidityV2Instruction(ix: AnchorInstruction, accounts: PubkeyString[], transfers: TransferAmountWithTransferFeeConfigAndAccounts[]): DecodedRepositionLiquidityV2Instruction {
     invariant(ix.name === "repositionLiquidityV2", "Invalid instruction name");
     invariant(accounts.length >= 19, "Invalid accounts");
+
+    const tokenOwnerAccountA = accounts[10];
+    const tokenOwnerAccountB = accounts[11];
+    const tokenVaultA = accounts[12];
+    const tokenVaultB = accounts[13];
+
+    const transferASource = transfers[0].source;
+    const transferADestination = transfers[0].destination;
+    const transferBSource = transfers[1].source;
+    const transferBDestination = transfers[1].destination;
+
+    invariant(transferASource === tokenOwnerAccountA || transferASource === tokenVaultA, "Invalid transfer source for token A");
+    invariant(transferADestination === tokenOwnerAccountA || transferADestination === tokenVaultA, "Invalid transfer destination for token A");
+    invariant(transferBSource === tokenOwnerAccountB || transferBSource === tokenVaultB, "Invalid transfer source for token B");
+    invariant(transferBDestination === tokenOwnerAccountB || transferBDestination === tokenVaultB, "Invalid transfer destination for token B");
+
+    const isTokenATransferFromOwner = transferASource === tokenOwnerAccountA;
+    const isTokenBTransferFromOwner = transferBSource === tokenOwnerAccountB;
+
     return {
       name: "repositionLiquidityV2",
       data: {
@@ -2208,6 +2230,10 @@ export class WhirlpoolTransactionDecoder {
       },
       remainingAccounts: accounts.slice(19),
       transfers,
+      auxiliaries: {
+        isTokenATransferFromOwner,
+        isTokenBTransferFromOwner,
+      }
     };
   }
 

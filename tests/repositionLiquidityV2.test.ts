@@ -57,8 +57,10 @@ describe("Reposition Liquidity V2", () => {
     expect(ixs0.transfers.length).toEqual(2);
     expect(ixs0.transfers[0].amount.toString()).toEqual("0");
     expect(ixs0.transfers[0].transferFeeConfig).toBeNull();
+    expect(ixs0.auxiliaries.isTokenATransferFromOwner).toEqual(true);
     expect(ixs0.transfers[1].amount.toString()).toEqual("49920259");
     expect(ixs0.transfers[1].transferFeeConfig).toBeNull();
+    expect(ixs0.auxiliaries.isTokenBTransferFromOwner).toEqual(false);
   });
 
 });
