@@ -1,5 +1,6 @@
 import { WhirlpoolTransactionDecoder } from "../src/decoder";
 import { DecodedIncreaseLiquidityByTokenAmountsV2Instruction, TransactionJSON } from "../src/types";
+import { jsonifyEnum } from "./utils";
 
 jest.setTimeout(100 * 1000 /* ms */);
 
@@ -52,6 +53,9 @@ describe("Increase Liquidity By Token Amounts V2", () => {
     expect(ixs0.transfers[0].transferFeeConfig).toBeNull();
     expect(ixs0.transfers[1].amount.toString()).toEqual("500000000");
     expect(ixs0.transfers[1].transferFeeConfig).toBeNull();
+
+    const methodJsonString = jsonifyEnum(ixs0.data.method);
+    expect(methodJsonString).toEqual('{"name":"byTokenAmounts","tokenMaxA":"1000000000","tokenMaxB":"500000000","minSqrtPrice":"4295048016","maxSqrtPrice":"79226673515401279992447579055"}');
   });
 
 });

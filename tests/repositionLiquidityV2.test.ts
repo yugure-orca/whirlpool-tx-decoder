@@ -1,5 +1,6 @@
 import { WhirlpoolTransactionDecoder } from "../src/decoder";
 import { DecodedRepositionLiquidityV2Instruction, TransactionJSON } from "../src/types";
+import { jsonifyEnum } from "./utils";
 
 jest.setTimeout(100 * 1000 /* ms */);
 
@@ -61,6 +62,9 @@ describe("Reposition Liquidity V2", () => {
     expect(ixs0.transfers[1].amount.toString()).toEqual("49920259");
     expect(ixs0.transfers[1].transferFeeConfig).toBeNull();
     expect(ixs0.auxiliaries.isTokenBTransferFromOwner).toEqual(false);
+
+    const methodJsonString = jsonifyEnum(ixs0.data.method);
+    expect(methodJsonString).toEqual('{"name":"byLiquidity","newLiquidityAmount":"93468635752","existingRangeTokenMinA":"0","existingRangeTokenMinB":"100","newRangeTokenMaxA":"1000000000","newRangeTokenMaxB":"300000000"}');
   });
 
 });

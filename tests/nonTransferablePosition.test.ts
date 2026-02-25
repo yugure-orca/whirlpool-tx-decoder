@@ -1,5 +1,6 @@
 import { WhirlpoolTransactionDecoder } from "../src/decoder";
 import { DecodedSetConfigFeatureFlagInstruction, DecodedSetTokenBadgeAttributeInstruction, TransactionJSON } from "../src/types";
+import { jsonifyEnum } from "./utils";
 
 jest.setTimeout(100 * 1000 /* ms */);
 
@@ -30,6 +31,9 @@ describe("Non Transferable Position", () => {
     expect(ixs0.data.featureFlag.enabled).toEqual(true);
     expect(ixs0.accounts.whirlpoolsConfig).toEqual("2whzE4Lrzjp1eLAHoWDBsA1m42A2kTM4QV8d1dAwsYEr");
     expect(ixs0.accounts.authority).toEqual("tstYmkF9JHjZbSugJe1H3ygUTox1bqSxpn5QjxMwVrm");
+
+    const featureFlagJsonString = jsonifyEnum(ixs0.data.featureFlag);
+    expect(featureFlagJsonString).toEqual('{"name":"tokenBadge","enabled":true}');
   });
 
   it("setConfigFeatureFlag (TokenBadge = false)", async () => {
@@ -47,6 +51,9 @@ describe("Non Transferable Position", () => {
     expect(ixs0.data.featureFlag.enabled).toEqual(false);
     expect(ixs0.accounts.whirlpoolsConfig).toEqual("2whzE4Lrzjp1eLAHoWDBsA1m42A2kTM4QV8d1dAwsYEr");
     expect(ixs0.accounts.authority).toEqual("tstYmkF9JHjZbSugJe1H3ygUTox1bqSxpn5QjxMwVrm");
+
+    const featureFlagJsonString = jsonifyEnum(ixs0.data.featureFlag);
+    expect(featureFlagJsonString).toEqual('{"name":"tokenBadge","enabled":false}');
   });
 
   it("setTokenBadgeAttribute (RequireNonTransferablePosition = true)", async () => {
@@ -67,6 +74,9 @@ describe("Non Transferable Position", () => {
     expect(ixs0.accounts.tokenBadgeAuthority).toEqual("8iVB7wuduy2ohvz7fgpAUeZHcvLhvsVMZpDaKFJsjFkL");
     expect(ixs0.accounts.tokenMint).toEqual("93E3X5fxnqB1iL7K1wT3nHHVFgRfF2F55HEQgDq8BdEu");
     expect(ixs0.accounts.tokenBadge).toEqual("D8DBqtte4WobaPjEr1bNKiK5LuzrKWX65gs2KrQKDkBC");
+
+    const attributeJsonString = jsonifyEnum(ixs0.data.attribute);
+    expect(attributeJsonString).toEqual('{"name":"requireNonTransferablePosition","required":true}');
   });
 
   it("setTokenBadgeAttribute (RequireNonTransferablePosition = false)", async () => {
@@ -87,5 +97,8 @@ describe("Non Transferable Position", () => {
     expect(ixs0.accounts.tokenBadgeAuthority).toEqual("8iVB7wuduy2ohvz7fgpAUeZHcvLhvsVMZpDaKFJsjFkL");
     expect(ixs0.accounts.tokenMint).toEqual("93E3X5fxnqB1iL7K1wT3nHHVFgRfF2F55HEQgDq8BdEu");
     expect(ixs0.accounts.tokenBadge).toEqual("D8DBqtte4WobaPjEr1bNKiK5LuzrKWX65gs2KrQKDkBC");
+
+    const attributeJsonString = jsonifyEnum(ixs0.data.attribute);
+    expect(attributeJsonString).toEqual('{"name":"requireNonTransferablePosition","required":false}');
   });
 });

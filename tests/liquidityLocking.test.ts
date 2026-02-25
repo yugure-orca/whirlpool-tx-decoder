@@ -1,5 +1,6 @@
 import { WhirlpoolTransactionDecoder } from "../src/decoder";
 import { DecodedLockPositionInstruction, DecodedTransferLockedPositionInstruction, TransactionJSON } from "../src/types";
+import { jsonifyEnum } from "./utils";
 
 jest.setTimeout(100 * 1000 /* ms */);
 
@@ -40,7 +41,7 @@ describe("Liquidity Locking", () => {
     // authority = owner
     expect(ixs0.auxiliaries.positionTokenAccountOwner).toEqual("r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6");
 
-    const lockTypeJsonString = JSON.stringify(ixs0.data.lockType);
+    const lockTypeJsonString = jsonifyEnum(ixs0.data.lockType);
     expect(lockTypeJsonString).toEqual('{"name":"permanent"}');
   });
 
